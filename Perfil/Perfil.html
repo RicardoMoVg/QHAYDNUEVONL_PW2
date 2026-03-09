@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfil de Usuario</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="Perfil.css" />
+  </head>
+  <body>
+    <header class="main-header">
+      <div class="header-container">
+        <div class="logo-area">
+          <img src="Recursos/logo.png" alt="Logo UANL" class="logo-img" />
+        </div>
+
+        <div class="search-area">
+          <input type="text" placeholder="Buscar publicaciones..." />
+        </div>
+
+        <nav class="nav-links">
+          <a href="Dashboard.html"><i class="fas fa-home"></i> Inicio</a>
+          <a href="#"><i class="fas fa-plus"></i> Publicar</a>
+          <a href="#"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="profile-container">
+      <div class="cover-section">
+        <img
+          src="Recursos/portada.jpg"
+          alt="Portada Monterrey"
+          class="cover-photo"
+        />
+
+        <div class="edit-cover-icon">
+          <i class="fas fa-camera"></i>
+        </div>
+
+        <div class="profile-photo-wrapper">
+          <img
+            src="Recursos/perfil.jpg"
+            alt="Foto de perfil de Carlos"
+            class="profile-photo"
+          />
+          <div class="edit-profile-photo-icon">
+            <i class="fas fa-camera"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="user-info-section">
+        <div class="info-and-button">
+          <div class="text-info">
+            <h1>Carlos Rodríguez</h1>
+            <div class="meta-info">
+              <span
+                ><i class="fas fa-map-marker-alt"></i> Monterrey, Nuevo
+                León</span
+              >
+              <span
+                ><i class="fas fa-calendar-alt"></i> Miembro desde Enero
+                2026</span
+              >
+            </div>
+          </div>
+          <button class="edit-profile-btn">
+            <i class="fas fa-pen"></i> Editar perfil
+          </button>
+        </div>
+
+        <p class="user-bio">Descripción del perfil</p>
+      </div>
+
+      <hr class="section-divider" />
+
+      <div class="stats-section">
+        <div class="stat-item">
+          <span class="stat-number">2</span>
+          <span class="stat-label">Publicaciones</span>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

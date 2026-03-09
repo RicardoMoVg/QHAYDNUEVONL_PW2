@@ -1,0 +1,247 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: #8d949a;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- HEADER --- */
+.main-header {
+  background-color: #001f5b;
+  color: white;
+  padding: 10px 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.logo-img {
+  height: 50px;
+  border-radius: 8px;
+}
+
+.search-area input {
+  width: 400px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: none;
+  background-color: white;
+  font-size: 14px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.nav-links a:hover {
+  opacity: 0.8;
+}
+
+/* Botón de perfil amarillo */
+.nav-links .profile-btn {
+  background-color: #ffc107; /* Amarillo Tigres */
+  color: #001f5b; /* Texto azul */
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+.nav-links .profile-btn:hover {
+  opacity: 1;
+  background-color: #e0a800; /* Amarillo un poco más oscuro al pasar el mouse */
+}
+
+/* --- ESTILOS DEL CONTENEDOR PRINCIPAL DEL PERFIL --- */
+.profile-container {
+  max-width: 950px;
+  margin: 100px auto 40px; /* 100px arriba para no taparse con el header fijo */
+  background-color: white;
+  border-radius: 15px;
+  overflow: hidden; /* Para que la portada respete las esquinas redondeadas */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* --- PORTADA Y FOTO DE PERFIL --- */
+.cover-section {
+  position: relative; /* Necesario para posicionar elementos dentro */
+  height: 300px;
+  overflow: hidden;
+}
+
+.cover-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Asegura que la imagen llene el espacio sin deformarse */
+}
+
+/* Iconos de cámara para editar */
+.edit-cover-icon,
+.edit-profile-photo-icon {
+  position: absolute;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.7
+  ); /* Fondo blanco semi-transparente */
+  color: #555;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  transition: background-color 0.2s;
+}
+
+.edit-cover-icon {
+  top: 20px;
+  right: 20px;
+}
+
+.edit-cover-icon:hover,
+.edit-profile-photo-icon:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-photo-wrapper {
+  position: absolute;
+  bottom: -60px;
+  left: 40px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 5px solid white;
+  overflow: visible;
+}
+
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.edit-profile-photo-icon {
+  width: 30px;
+  height: 30px;
+  bottom: 5px;
+  right: 5px;
+  background-color: #ffc107;
+  color: white;
+  border: none;
+  font-size: 14px;
+}
+
+.user-info-section {
+  padding: 80px 40px 20px;
+}
+
+.info-and-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.text-info h1 {
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.meta-info {
+  font-size: 14px;
+  color: #777;
+  display: flex;
+  gap: 15px;
+}
+
+.meta-info span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Botón Editar Perfil azul */
+.edit-profile-btn {
+  background-color: #001f5b; /* Azul marino */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.edit-profile-btn:hover {
+  background-color: #00133a;
+}
+
+.user-bio {
+  font-size: 16px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.section-divider {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 0 40px;
+}
+
+.stats-section {
+  padding: 20px 40px 30px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffc107;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #777;
+}

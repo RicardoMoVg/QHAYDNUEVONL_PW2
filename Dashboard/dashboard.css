@@ -1,0 +1,252 @@
+/* --- ESTILOS GENERALES Y RESETEO (Mantener) --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: #f0f2f5; /* Fondo gris claro, más estándar para dashboard */
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- ESTILOS DE LA BARRA DE NAVEGACIÓN (HEADER) - IDÉNTICA (Mantener) --- */
+.main-header {
+  background-color: #001f5b; /* Azul marino oscuro */
+  color: white;
+  padding: 10px 0;
+  position: fixed; /* Mantiene la barra fija arriba */
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.logo-img {
+  height: 50px;
+  border-radius: 8px;
+}
+
+.search-area input {
+  width: 400px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: none;
+  background-color: white;
+  font-size: 14px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.nav-links a:hover {
+  opacity: 0.8;
+}
+
+/* Botón de perfil amarillo - IDÉNTICO */
+.nav-links .profile-btn {
+  background-color: #ffc107; /* Amarillo Tigres */
+  color: #001f5b; /* Texto azul */
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+/* --- ESTILOS DEL CONTENEDOR PRINCIPAL DEL DASHBOARD --- */
+.dashboard-container {
+  max-width: 1300px; /* Más ancho que el perfil para acomodar la cuadrícula */
+  margin: 100px auto 40px; /* 100px arriba para no taparse con el header fijo */
+  padding: 0 20px;
+}
+
+/* --- ESTILOS DE LA BARRA DE FILTROS --- */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 10px;
+}
+
+.pill {
+  background-color: white;
+  color: #555;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s;
+}
+
+.pill:hover {
+  background-color: #e9ecef;
+}
+
+.pill.active {
+  background-color: #ffc107; /* Amarillo Tigres */
+  color: #001f5b;
+}
+
+.filter-btn {
+  background-color: white;
+  color: #555;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-btn:hover {
+  background-color: #f8f9fa;
+}
+
+/* --- ESTILOS DE LA CUADRÍCULA DE PUBLICACIONES (GRID) --- */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas de igual ancho */
+  gap: 30px; /* Espacio entre tarjetas */
+}
+
+/* --- ESTILOS DE LA TARJETA DE PUBLICACIÓN (CARD) --- */
+.post-card {
+  background-color: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.post-card:hover {
+  transform: translateY(
+    -5px
+  ); /* Pequeño efecto de elevación al pasar el mouse */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+}
+
+.card-image-wrapper {
+  position: relative;
+  height: 200px;
+}
+
+.card-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #ffc107; /* Amarillo Tigres */
+  color: #001f5b;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-content {
+  padding: 20px;
+}
+
+.location-author {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-content h2 {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.card-stats {
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.card-stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.card-divider {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin-bottom: 15px;
+}
+
+/* --- ESTILOS DEL PIE DE LA TARJETA --- */
+.post-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.author-photo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-info h4 {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: #333;
+}
+
+.author-info span {
+  font-size: 12px;
+  color: #999;
+}
