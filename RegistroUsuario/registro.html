@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - ¿Qué hay de nuevo, Nuevo León?</title>
+    <link rel="stylesheet" href="registro.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <main class="login-wrapper">
+        <div class="login-aside">
+            <div class="aside-content">
+                <h1>¿QUÉ HAY DE NUEVO,<br><span>NUEVO LEÓN?</span></h1>
+            </div>
+        </div>
+
+        <div class="login-section">
+            <div class="login-box">
+                <div class="brand-logo">
+                    <i class="fas fa-futbol"></i>
+                </div>
+
+                <div class="login-header">
+                    <h2>¡Crea tu cuenta!</h2>
+                </div>
+
+                <form class="login-form">
+                    <div class="input-group">
+                        <label for="name"><i class="fas fa-user"></i> Nombre completo</label>
+                        <input type="text" id="name" placeholder="Tu nombre" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="age"><i class="fas fa-calendar-day"></i> Edad</label>
+                        <input type="number" id="age" placeholder="Ej. 20" min="13" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="email" placeholder="ejemplo@correo.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="confirm-password"><i class="fas fa-lock"></i> Confirmar contraseña</label>
+                        <input type="password" id="confirm-password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-login">Registrarse</button>
+                </form>
+
+                <div class="toggle-box">
+                    <p>¿Ya tienes cuenta? <a href="../Login/login.html">Inicia sesión</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
