@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Mundial MTY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo-section">
+            <div class="logo-icon"><i class="fas fa-futbol"></i></div>
+            <input type="text" placeholder="Buscar publicaciones..." class="search-bar">
+        </div>
+        <nav class="nav-menu" id="navMenu">
+            <a href="#"><i class="fas fa-home"></i> Inicio</a>
+            <a href="#"><i class="fas fa-plus"></i> Publicar</a>
+            <a href="#"><i class="fas fa-chart-line"></i> Tendencias</a>
+            <a href="#"><i class="fas fa-user"></i> Perfil</a>
+            <button class="btn-admin-nav"><i class="fas fa-user-shield"></i> Administración</button>
+            <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="section-title admin-header">
+            <div class="title-flex">
+                <div class="title-icon admin-bg"><i class="fas fa-shield-alt"></i></div>
+                <div class="title-text">
+                    <h1>Panel de Administración</h1>
+                    <p>Control total, reportes y gestión avanzada del sistema</p>
+                </div>
+            </div>
+            <button class="btn-report" onclick="toggleReportModal()">
+                <i class="fas fa-file-export"></i> Generar Reporte
+            </button>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card gold-border">
+                <div class="stat-info">
+                    <span>Publicaciones</span>
+                    <strong>3</strong>
+                    <small class="text-red">2 eliminadas</small>
+                </div>
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="stat-card blue-border">
+                <div class="stat-info">
+                    <span>Usuarios</span>
+                    <strong>3</strong>
+                    <small class="text-red">2 eliminados</small>
+                </div>
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-card gray-border">
+                <div class="stat-info">
+                    <span>Comentarios</span>
+                    <strong>2</strong>
+                    <small class="text-red">1 eliminado</small>
+                </div>
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <div class="stat-card red-border">
+                <div class="stat-info">
+                    <span>Reportes</span>
+                    <strong class="text-red">2</strong>
+                    <small>Requieren atención</small>
+                </div>
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </section>
+
+        <section class="management-box">
+            <div class="tabs scrollable-tabs">
+                <button class="tab-btn active" data-tab="publicaciones"><i class="fas fa-layer-group"></i> Publicaciones</button>
+                <button class="tab-btn" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
+                <button class="tab-btn" data-tab="comentarios"><i class="fas fa-comments"></i> Comentarios</button>
+                <button class="tab-btn" data-tab="categorias"><i class="fas fa-tags"></i> Categorías</button>
+                <button class="tab-btn" data-tab="posts-eliminados"><i class="fas fa-trash-alt"></i> Posts Eliminados</button>
+                <button class="tab-btn danger-tab" data-tab="usuarios-eliminados"><i class="fas fa-user-slash"></i> Usuarios Eliminados</button>
+            </div>
+
+            <div class="content-list">
+                <!-- Tab: Publicaciones -->
+                <div id="publicaciones" class="tab-content active">
+                    <div class="admin-table-header">
+                        <div>
+                            <h2>Gestión de Publicaciones</h2>
+                            <p>Vista general de todas las publicaciones del sistema</p>
+                        </div>
+                    </div>
+                    <p style="padding: 1rem; color: #666;">Seleccione una publicación para administrar.</p>
+                </div>
+
+                <!-- Tab: Usuarios -->
+                <div id="usuarios" class="tab-content">
+                    <div class="admin-table-header"><h2>Gestión de Usuarios</h2></div>
+                    <p style="padding: 1rem; color: #666;">Listado de usuarios activos.</p>
+                </div>
+
+                <!-- Tab: Comentarios -->
+                <div id="comentarios" class="tab-content">
+                    <div class="admin-table-header"><h2>Gestión de Comentarios</h2></div>
+                    <p style="padding: 1rem; color: #666;">Moderación de comentarios recientes.</p>
+                </div>
+
+                <!-- Tab: Categorías -->
+                <div id="categorias" class="tab-content">
+                    <div class="admin-table-header"><h2>Gestión de Categorías</h2></div>
+                    <p style="padding: 1rem; color: #666;">Administración de categorías del foro.</p>
+                </div>
+
+                <!-- Tab: Posts Eliminados -->
+                <div id="posts-eliminados" class="tab-content">
+                    <div class="admin-table-header"><h2>Posts Eliminados</h2></div>
+                    <p style="padding: 1rem; color: #666;">Historial de publicaciones eliminadas.</p>
+                </div>
+
+                <!-- Tab: Usuarios Eliminados -->
+                <div id="usuarios-eliminados" class="tab-content">
+                    <div class="admin-table-header">
+                        <div>
+                            <h2>Usuarios Eliminados</h2>
+                            <p>Registro de cuentas removidas del sistema</p>
+                        </div>
+                        <button class="btn-export-sm"><i class="fas fa-download"></i> Exportar</button>
+                    </div>
+
+                    <article class="content-item deleted-item">
+                        <div class="item-main">
+                            <div class="user-info">
+                                <h3>Usuario Problemático</h3>
+                                <code>problema@example.com</code>
+                                <div class="admin-meta">
+                                    <span>Razón: <b class="text-red">Múltiples violaciones</b></span>
+                                    <span>Eliminado por: <b>Admin Principal</b></span>
+                                    <span>Fecha: 17 Feb 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge-deleted">8 posts eliminados</span>
+                    </article>
+
+                    <article class="content-item deleted-item">
+                        <div class="item-main">
+                            <div class="user-info">
+                                <h3>Bot Spammer</h3>
+                                <code>bot@spam.com</code>
+                                <div class="admin-meta">
+                                    <span>Razón: <b class="text-red">Actividad automatizada</b></span>
+                                    <span>Eliminado por: <b>Admin Principal</b></span>
+                                    <span>Fecha: 20 Feb 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge-deleted">15 posts eliminados</span>
+                    </article>
+                </div>
+                </div>
+        </section>
+    </main>
+
+    <div id="reportModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-invoice"></i> Generar Reportes</h2>
+                <button onclick="toggleReportModal()" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="report-form">
+                <label class="form-label">Tipo de Reporte:</label>
+                <select id="reportType" class="report-select">
+                    <option value="posts">Publicaciones Eliminadas</option>
+                    <option value="users">Usuarios Eliminados</option>
+                    <option value="comments">Comentarios Eliminados</option>
+                    <option value="general">Moderación General</option>
+                </select>
+
+                <p id="reportDesc" class="report-info">Listado de todas las publicaciones borradas por moderadores. Incluye: título, usuario, moderador responsable, motivo, fecha.</p>
+
+                <label class="form-label">Formato de descarga:</label>
+                <div class="format-buttons">
+                    <button class="report-btn" onclick="downloadReport('PDF')"><i class="fas fa-file-pdf" style="color: #e11d48;"></i> PDF</button>
+                    <button class="report-btn" onclick="downloadReport('Excel')"><i class="fas fa-file-excel" style="color: #15803d;"></i> Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Modal
+        function toggleReportModal() {
+            const modal = document.getElementById('reportModal');
+            modal.style.display = (modal.style.display === 'none') ? 'flex' : 'none';
+        }
+
+        // Descripciones de reportes
+        const reportDescriptions = {
+            posts: "Listado de todas las publicaciones borradas por moderadores. Incluye: título, usuario, moderador responsable, motivo, fecha.",
+            users: "Usuarios que fueron dados de baja. Incluye: nombre, correo, moderador responsable, motivo, fecha.",
+            comments: "Registro de comentarios eliminados por incumplir reglas. Incluye: contenido, usuario, moderador, motivo, fecha.",
+            general: "Consolidado con métricas globales: total de publicaciones, comentarios y usuarios eliminados; moderadores más activos, motivos más frecuentes de eliminación."
+        };
+
+        // Actualizar descripción al cambiar selección
+        document.getElementById('reportType').addEventListener('change', function() {
+            document.getElementById('reportDesc').textContent = reportDescriptions[this.value];
+        });
+
+        function downloadReport(format) {
+            const typeSelect = document.getElementById('reportType');
+            const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+            alert(`Generando reporte: "${typeText}" en formato ${format}...`);
+        }
+
+        // Lógica de Pestañas
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remover clase active de todos los botones y contenidos
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Activar el botón clickeado y su contenido correspondiente
+                btn.classList.add('active');
+                const targetId = btn.getAttribute('data-tab');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
