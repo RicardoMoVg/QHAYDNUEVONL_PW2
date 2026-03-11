@@ -13,78 +13,13 @@ body {
     color: var(--text-dark);
 }
 
-/* Header */
-.main-header {
-    background-color: var(--navy);
-    padding: 1rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    color: white;
-}
-
-.logo-section { 
-    display: flex; 
-    align-items: center; 
-    gap: 1rem; 
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-.logo-icon {
-    background-color: var(--gold);
-    color: var(--navy);
-    padding: 0.5rem;
-    border-radius: 8px;
-    font-size: 1.5rem;
-    order: 2;
-}
-
-.logo-icon i {
-    display: inline-block;
-    animation: bounce 2s infinite ease-in-out;
-}
-
-.menu-toggle {
-    display: block;
-    background: none;
-    border: none;
-    color: var(--gold);
-    font-size: 1.8rem;
-    cursor: pointer;
-    order: 1;
-    width: 100%;
-    text-align: right;
-}
-
+/* Category Form Inputs */
 .search-bar {
     padding: 0.5rem 1rem;
     border-radius: 6px;
-    border: none;
+    border: 1px solid #d1d5db;
     width: auto;
     flex: 1;
-    order: 3;
-    margin-top: 0.5rem;
-}
-
-.nav-menu { 
-    display: none; 
-    flex-direction: column; 
-    width: 100%; 
-    gap: 1rem; 
-}
-
-.nav-menu.active {
-    display: flex;
-}
-
-.nav-menu a { 
-    color: white; 
-    text-decoration: none; 
-    font-size: 1rem; 
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .btn-mod {
@@ -107,7 +42,7 @@ body {
 }
 
 /* Layout */
-.container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+.container { max-width: 1100px; margin: 100px auto 2rem; padding: 0 1rem; }
 
 .section-title { 
     display: flex; 
@@ -313,20 +248,8 @@ body {
 @media (min-width: 768px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     
-    .main-header { flex-direction: row; align-items: center; justify-content: space-between; }
-    .logo-section { width: auto; flex-wrap: nowrap; }
-    .logo-icon { order: unset; }
-    .search-bar { width: 250px; order: unset; margin-top: 0; flex: none; }
-    .menu-toggle { display: none; }
+    .search-bar { width: 250px; flex: none; }
     
-    .nav-menu { 
-        display: flex; 
-        flex-direction: row; 
-        width: auto; 
-        align-items: center; 
-        gap: 1.5rem; 
-    }
-    .nav-menu a { border-bottom: none; padding: 0; font-size: 0.9rem; }
     .btn-mod { width: auto; margin-top: 0; }
     
     .content-item { flex-direction: row; align-items: center; justify-content: space-between; }
