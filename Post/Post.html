@@ -1,145 +1,136 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Post Completo</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="Post.css" />
-  </head>
-  <body>
-    <header class="main-header">
-      <div class="header-container">
-        <div class="logo-area">
-          <img src="Recursos/logo.png" alt="Logo" class="logo-img" />
-        </div>
-        <div class="search-area">
-          <input type="text" placeholder="Buscar publicaciones..." />
-        </div>
-        <nav class="nav-links">
-          <a href="Dashboard.html"><i class="fas fa-home"></i> Inicio</a>
-          <a href="#"><i class="fas fa-plus"></i> Publicar</a>
-          <a href="Perfil.html" class="profile-btn"
-            ><i class="fas fa-user"></i> Perfil</a
-          >
-          <a href="#"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-        </nav>
-      </div>
-    </header>
 
-    <main class="post-detail-container">
-      <div class="main-content">
-        <article class="post-full-card">
-          <div class="post-hero">
-            <img src="Recursos/tacos.jpg" alt="Tacos" />
-            <span class="category-badge">Gastronomía</span>
-            <div class="hero-actions">
-              <button><i class="far fa-bookmark"></i></button>
-              <button><i class="fas fa-share-alt"></i></button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post Completo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="Post.css" />
+</head>
+
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <img src="../Recursos/logo.png" alt="Logo UANL" class="logo-img" />
+      </div>
+
+      <div class="search-area">
+        <input type="text" placeholder="Buscar publicaciones..." />
+      </div>
+
+      <nav class="nav-links">
+        <a href="../index.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="../index.html"><i class="fas fa-plus"></i> Publicar</a>
+        <a href="../Perfil/Perfil.html" class="profile-btn"><i class="fas fa-user"></i> Perfil</a>
+        <a href="../Login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="post-detail-container">
+    <div class="main-content">
+      <article class="post-full-card">
+        <div class="post-hero">
+          <img src="../Recursos/tacos.jpg" alt="Tacos" />
+          <span class="category-badge">Gastronomía</span>
+          <div class="hero-actions">
+          </div>
+        </div>
+
+        <div class="post-body">
+          <div class="gallery-section">
+            <h3>Galería de imágenes <span>3</span></h3>
+            <div class="gallery-grid">
+              <img src="../Recursos/tacos1.jpg" alt="Gallery" />
+              <img src="../Recursos/tacos2.jpg" alt="Gallery" />
+              <img src="../Recursos/tacos1.jpg" alt="Gallery" />
             </div>
           </div>
 
-          <div class="post-body">
-            <div class="gallery-section">
-              <h3>Galería de imágenes <span>3</span></h3>
-              <div class="gallery-grid">
-                <img src="Recursos/tacos1.jpg" alt="Gallery" />
-                <img src="Recursos/tacos2.jpg" alt="Gallery" />
-                <img src="Recursos/tacos1.jpg" alt="Gallery" />
+          <div class="author-row">
+            <div class="author-meta">
+              <img src="../Recursos/perfil.jpg" alt="User" class="author-img" />
+              <div>
+                <h4>Carlos Rodríguez</h4>
+                <span>Experto local • 212 publicaciones</span>
               </div>
             </div>
-
-            <div class="author-row">
-              <div class="author-meta">
-                <img src="Recursos/perfil.jpg" alt="User" class="author-img" />
-                <div>
-                  <h4>Carlos Rodríguez</h4>
-                  <span>Experto local • 212 publicaciones</span>
-                </div>
-              </div>
-              <div class="like-actions">
-                <button class="btn-like">
-                  <i class="far fa-heart"></i> 234
-                </button>
-                <button class="btn-more">
-                  <i class="fas fa-ellipsis-h"></i>
-                </button>
-              </div>
+            <div class="like-actions">
+              <button class="btn-like">
+                <i class="far fa-heart"></i> 234
+              </button>
+              <i class="fas fa-ellipsis-h"></i>
             </div>
+          </div>
 
-            <h1 class="post-title">Los mejores tacos al pastor de Monterrey</h1>
+          <h1 class="post-title">Los mejores tacos al pastor de Monterrey</h1>
 
-            <div class="post-description">
-              <h3>Descripción</h3>
+          <div class="post-description">
+            <h3>Descripción</h3>
+            <p>
+              Descubre los tacos más auténticos de la ciudad. Una experiencia
+              gastronómica imperdible para los visitantes del Mundial. El
+              Barrio Antiguo es conocido por su rica tradición culinaria y
+              estos tacos al pastor son simplemente excepcionales.
+            </p>
+          </div>
+
+          <div class="tags-container">
+            <span class="tag">#Mundial2026</span>
+            <span class="tag">#Monterrey</span>
+            <span class="tag">#Gastronomía</span>
+            <span class="tag">#BarrioAntiguo</span>
+          </div>
+        </div>
+      </article>
+
+      <section class="comments-section">
+        <h3>
+          <i class="far fa-comment-dots"></i> Comentarios <span>3</span>
+        </h3>
+
+        <div class="comment-input-area">
+          <img src="../Recursos/perfil.jpg" alt="User" class="mini-avatar" />
+          <div class="input-wrapper">
+            <textarea placeholder="Comparte tu opinión o experiencia sobre este lugar..."></textarea>
+            <div class="input-footer">
+              <span>0 / 500 caracteres</span>
+              <button class="btn-publish">Publicar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="comments-list">
+          <div class="comment-item">
+            <img src="../Recursos/perfil.jpg" alt="User" class="comment-avatar" />
+            <div class="comment-content">
+              <h5>Luis Martínez <span>Hace 2 horas</span></h5>
               <p>
-                Descubre los tacos más auténticos de la ciudad. Una experiencia
-                gastronómica imperdible para los visitantes del Mundial. El
-                Barrio Antiguo es conocido por su rica tradición culinaria y
-                estos tacos al pastor son simplemente excepcionales.
+                ¡Excelente recomendación! Definitivamente lo visitaré durante
+                mi estancia.
               </p>
-            </div>
-
-            <div class="tags-container">
-              <span class="tag">#Mundial2026</span>
-              <span class="tag">#Monterrey</span>
-              <span class="tag">#Gastronomía</span>
-              <span class="tag">#BarrioAntiguo</span>
-            </div>
-          </div>
-        </article>
-
-        <section class="comments-section">
-          <h3>
-            <i class="far fa-comment-dots"></i> Comentarios <span>3</span>
-          </h3>
-
-          <div class="comment-input-area">
-            <img src="Recursos/perfil.jpg" alt="User" class="mini-avatar" />
-            <div class="input-wrapper">
-              <textarea
-                placeholder="Comparte tu opinión o experiencia sobre este lugar..."
-              ></textarea>
-              <div class="input-footer">
-                <span>0 / 500 caracteres</span>
-                <button class="btn-publish">Publicar</button>
+              <div class="comment-actions">
+                <span><i class="far fa-heart"></i> 12</span>
+                <button>Responder</button>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+    </div>
 
-          <div class="comments-list">
-            <div class="comment-item">
-              <img src="user1.jpg" alt="User" class="comment-avatar" />
-              <div class="comment-content">
-                <h5>Luis Martínez <span>Hace 2 horas</span></h5>
-                <p>
-                  ¡Excelente recomendación! Definitivamente lo visitaré durante
-                  mi estancia.
-                </p>
-                <div class="comment-actions">
-                  <span><i class="far fa-heart"></i> 12</span>
-                  <button>Responder</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+    <aside class="sidebar">
+      <div class="ad-card">
+        <img src="../Recursos/BK.jpg" alt="Anuncio Burger" />
       </div>
+      <div class="ad-card">
+        <img src="../Recursos/ad2.jpg" alt="Anuncio CR7" />
+      </div>
+    </aside>
+  </main>
+</body>
 
-      <aside class="sidebar">
-        <div class="ad-card">
-          <img src="Recursos/BK.jpg" alt="Anuncio Burger" />
-        </div>
-        <div class="ad-card">
-          <img src="ad2.jpg" alt="Anuncio CR7" />
-        </div>
-      </aside>
-    </main>
-  </body>
 </html>

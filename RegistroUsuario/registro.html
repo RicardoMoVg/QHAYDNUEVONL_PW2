@@ -26,7 +26,7 @@
                     <h2>¡Crea tu cuenta!</h2>
                 </div>
 
-                <form class="login-form">
+                <form class="login-form" id="registerForm">
                     <div class="input-group">
                         <label for="name"><i class="fas fa-user"></i> Nombre completo</label>
                         <input type="text" id="name" placeholder="Tu nombre" required>
@@ -47,9 +47,66 @@
                         <label for="confirm-password"><i class="fas fa-lock"></i> Confirmar contraseña</label>
                         <input type="password" id="confirm-password" placeholder="••••••••" required>
                     </div>
-                    
-                    <button type="submit" class="btn-login">Registrarse</button>
+
+                    <p id="registerError"  style="color:#e74c3c;font-size:0.85rem;display:none;margin-bottom:8px;"></p>
+                    <p id="registerSuccess" style="color:#27ae60;font-size:0.85rem;display:none;margin-bottom:8px;"></p>
+
+                    <button type="submit" class="btn-login" id="btnRegister">Registrarse</button>
                 </form>
+
+                <script>
+                    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const nombre          = document.getElementById('name').value.trim();
+                        const edad            = document.getElementById('age').value;
+                        const email           = document.getElementById('email').value.trim();
+                        const password        = document.getElementById('password').value;
+                        const confirmPassword = document.getElementById('confirm-password').value;
+                        const errorEl         = document.getElementById('registerError');
+                        const successEl       = document.getElementById('registerSuccess');
+                        const btnRegister     = document.getElementById('btnRegister');
+
+                        errorEl.style.display   = 'none';
+                        successEl.style.display = 'none';
+
+                        if (password !== confirmPassword) {
+                            errorEl.textContent = 'Las contraseñas no coinciden.';
+                            errorEl.style.display = 'block';
+                            return;
+                        }
+
+                        btnRegister.disabled = true;
+                        btnRegister.textContent = 'Registrando...';
+
+                        try {
+                            const res = await fetch('http://localhost:3000/api/auth/register', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ nombre, edad, correo: email, password })
+                            });
+
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                errorEl.textContent = data.error || 'Error al registrarse.';
+                                errorEl.style.display = 'block';
+                                return;
+                            }
+
+                            successEl.textContent = '¡Cuenta creada! Redirigiendo al login...';
+                            successEl.style.display = 'block';
+                            setTimeout(() => window.location.href = '../Login/login.html', 2000);
+
+                        } catch (err) {
+                            errorEl.textContent = 'No se pudo conectar con el servidor.';
+                            errorEl.style.display = 'block';
+                        } finally {
+                            btnRegister.disabled = false;
+                            btnRegister.textContent = 'Registrarse';
+                        }
+                    });
+                </script>
 
                 <div class="toggle-box">
                     <p>¿Ya tienes cuenta? <a href="../Login/login.html">Inicia sesión</a></p>

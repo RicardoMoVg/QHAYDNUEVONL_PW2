@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
     <main class="login-wrapper">
         <div class="login-aside">
@@ -26,7 +28,7 @@
                     <h2>¡Bienvenido!</h2>
                 </div>
 
-                <form class="login-form">
+                <form class="login-form" id="loginForm">
                     <div class="input-group">
                         <label for="email"><i class="fas fa-user"></i> Email</label>
                         <input type="email" id="email" placeholder="ejemplo@correo.com" required>
@@ -35,9 +37,55 @@
                         <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
                         <input type="password" id="password" placeholder="••••••••" required>
                     </div>
-                    
-                    <button type="submit" class="btn-login">Iniciar sesión</button>
+
+                    <p id="loginError" style="color:#e74c3c;font-size:0.85rem;display:none;margin-bottom:8px;"></p>
+
+                    <button type="submit" class="btn-login" id="btnLogin">
+                        Iniciar sesión
+                    </button>
                 </form>
+
+                <script>
+                    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const email    = document.getElementById('email').value.trim();
+                        const password = document.getElementById('password').value;
+                        const errorEl  = document.getElementById('loginError');
+                        const btnLogin = document.getElementById('btnLogin');
+
+                        errorEl.style.display = 'none';
+                        btnLogin.disabled = true;
+                        btnLogin.textContent = 'Iniciando sesión...';
+
+                        try {
+                            const res = await fetch('http://localhost:3000/api/auth/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ correo: email, password })
+                            });
+
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                errorEl.textContent = data.error || 'Error al iniciar sesión.';
+                                errorEl.style.display = 'block';
+                                return;
+                            }
+
+                            // Guardar datos de sesión
+                            sessionStorage.setItem('usuario', JSON.stringify(data.usuario));
+                            window.location.href = '../index.html';
+
+                        } catch (err) {
+                            errorEl.textContent = 'No se pudo conectar con el servidor.';
+                            errorEl.style.display = 'block';
+                        } finally {
+                            btnLogin.disabled = false;
+                            btnLogin.textContent = 'Iniciar sesión';
+                        }
+                    });
+                </script>
 
                 <div class="social-divider">
                     <span>O continúa con</span>
@@ -45,7 +93,8 @@
 
                 <div class="social-login">
                     <button class="btn-social google">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google"> Google
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                            alt="Google"> Google
                     </button>
                     <button class="btn-social apple">
                         <i class="fab fa-apple"></i> Apple
@@ -59,4 +108,5 @@
         </div>
     </main>
 </body>
+
 </html>

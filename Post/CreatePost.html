@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Modal Post</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Roboto", sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* OVERLAY */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        /* MODAL */
+        .modal {
+            background: #12122a;
+            color: #fff;
+            border-radius: 14px;
+            width: 900px;
+            max-width: 98vw;
+            max-height: 96vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        /* HEADER */
+        .modal-header {
+            background: #0d0d24;
+            padding: 18px 24px 12px;
+            border-bottom: 1px solid #1e1e40;
+        }
+
+        .modal-header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .modal-header-top h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .badge {
+            background: #ffc107;
+            color: #001f5b;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            letter-spacing: .5px;
+        }
+
+        .modal-header p {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color .2s;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        /* BODY */
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* COLUMNA IZQ */
+        .col-left {
+            width: 48%;
+            padding: 22px;
+            border-right: 1px solid #1e1e40;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            overflow-y: auto;
+        }
+
+        /* SECCIÓN MULTIMEDIA */
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .section-label i {
+            color: #ffc107;
+        }
+
+        .required-badge {
+            margin-left: auto;
+            color: #ff6b6b;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .5px;
+        }
+
+        .dropzone {
+            border: 2px dashed #2e2e5a;
+            border-radius: 12px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s;
+            background: #0d0d24;
+            flex: 1;
+        }
+
+        .dropzone:hover {
+            border-color: #ffc107;
+        }
+
+        .dropzone-icon {
+            width: 64px;
+            height: 64px;
+            background: #1e1e40;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 26px;
+            color: #ffc107;
+        }
+
+        .dropzone h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .dropzone p {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .select-btn {
+            background: #1a3a8f;
+            color: #fff;
+            border: none;
+            padding: 11px 28px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .select-btn:hover {
+            background: #2248b0;
+        }
+
+        .file-types {
+            font-size: 11px;
+            color: #555;
+            margin-top: 14px;
+            letter-spacing: .5px;
+        }
+
+        /* REGLAS */
+        .rules-box {
+            background: #0f1e3d;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .rules-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffc107;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+
+        .rules-title i {
+            font-size: 13px;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12px;
+            color: #bbb;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .rule-item i {
+            color: #ffc107;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        /* COLUMNA DER */
+        .col-right {
+            flex: 1;
+            padding: 22px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* CAMPOS */
+        .field-label {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 7px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .field-label .req {
+            color: #ff6b6b;
+        }
+
+        .char-count {
+            font-size: 11px;
+            color: #555;
+        }
+
+        textarea {
+            width: 100%;
+            background: #0d0d24;
+            border: 1.5px solid #2e2e5a;
+            border-radius: 9px;
+            padding: 12px 14px;
+            color: #fff;
+            font-size: 13px;
+            font-family: "Roboto", sans-serif;
+            resize: none;
+            outline: none;
+            transition: border-color .2s;
+            line-height: 1.5;
+        }
+
+        textarea::placeholder {
+            color: #444;
+        }
+
+        textarea:focus {
+            border-color: #ffc107;
+        }
+
+        select {
+            width: 100%;
+            background: #0d0d24;
+            border: 1.5px solid #2e2e5a;
+            border-radius: 9px;
+            padding: 12px 14px;
+            color: #888;
+            font-size: 13px;
+            font-family: "Roboto", sans-serif;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color .2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        select:focus {
+            border-color: #ffc107;
+        }
+
+        select option {
+            background: #12122a;
+            color: #fff;
+        }
+
+        .location-input-wrap {
+            position: relative;
+        }
+
+        .location-input-wrap i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ffc107;
+            font-size: 14px;
+        }
+
+        .location-input {
+            width: 100%;
+            background: #0d0d24;
+            border: 1.5px solid #2e2e5a;
+            border-radius: 9px;
+            padding: 11px 14px 11px 38px;
+            color: #fff;
+            font-size: 13px;
+            font-family: "Roboto", sans-serif;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .location-input::placeholder {
+            color: #444;
+        }
+
+        .location-input:focus {
+            border-color: #ffc107;
+        }
+
+        /* MAPA */
+        .map-preview {
+            border-radius: 10px;
+            overflow: hidden;
+            height: 120px;
+            background: #1a1a2e;
+            position: relative;
+            border: 1.5px solid #2e2e5a;
+        }
+
+        .map-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: .6;
+        }
+
+        .map-pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%);
+            width: 38px;
+            height: 38px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #001f5b;
+            box-shadow: 0 4px 14px rgba(255, 193, 7, .4);
+        }
+
+        /* Mapa SVG inline */
+        .map-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* VISIBILIDAD */
+
+        .visibility-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-opt {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .radio-opt input[type=radio] {
+            accent-color: #ffc107;
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        .avatar-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffc107, #ff8c00);
+            flex-shrink: 0;
+        }
+
+        /* FOOTER */
+        .modal-footer {
+            background: #0d0d24;
+            padding: 14px 24px;
+            border-top: 1px solid #1e1e40;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .autosave {
+            font-size: 12px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .autosave i {
+            color: #ffc107;
+        }
+
+        .footer-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-save {
+            background: transparent;
+            border: 1.5px solid #2e2e5a;
+            color: #ccc;
+            padding: 10px 22px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+
+        .btn-save:hover {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+        .btn-publish {
+            background: #ffc107;
+            color: #001f5b;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background .2s;
+        }
+
+        .btn-publish:hover {
+            background: #e0a800;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="overlay">
+        <div class="modal">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <h2>Estudio de Creación</h2>
+                    <span class="badge">NL 2026</span>
+                </div>
+                <p>Comparte tu viaje mundialista en Monterrey con el mundo.</p>
+                <button class="close-btn" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <!-- COLUMNA IZQUIERDA -->
+                <div class="col-left">
+                    <div>
+                        <div class="section-label">
+                            <i class="fas fa-photo-film"></i> CONTENIDO MULTIMEDIA
+                            <span class="required-badge">REQUERIDO ✦</span>
+                        </div>
+                        <div class="dropzone">
+                            <div class="dropzone-icon"><i class="fas fa-file-arrow-up"></i></div>
+                            <h3>Suelta tus mejores momentos aquí</h3>
+                            <p>Sube fotos o videos de alta calidad del estadio o de los Fan<br />Zones de la ciudad.</p>
+                            <label for="file-upload" class="select-btn" style="display:inline-block; margin-top:5px;">Seleccionar Archivos</label>
+                            <input id="file-upload" type="file" style="display:none;" multiple accept="video/mp4,video/quicktime,image/jpeg,image/png" />
+                            <div class="file-types">MP4, MOV, JPG, PNG • MÁX 50MB</div>
+                        </div>
+                    </div>
+
+                    <div class="rules-box">
+                        <div class="rules-title"><i class="fas fa-shield-halved"></i> Reglas de la Comunidad</div>
+                        <div class="rule-item"><i class="fas fa-circle-check"></i> Enfócate en experiencias del Mundial
+                            en Nuevo León.</div>
+                        <div class="rule-item"><i class="fas fa-circle-check"></i> Asegura contenido de alta resolución
+                            para mayor visibilidad.</div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA -->
+                <div class="col-right">
+
+                    <!-- DESCRIPCIÓN -->
+                    <div>
+                        <div class="field-label">
+                            Descripción <span class="req">✦</span>
+                            <span class="char-count" id="charCount">0/500</span>
+                        </div>
+                        <textarea rows="5"
+                            placeholder="Cuéntale a los fans sobre tu experiencia en Monterrey... Usa #Monterrey2026 #NuevoLeon"
+                            maxlength="500"></textarea>
+                    </div>
+
+                    <!-- CATEGORÍA -->
+                    <div>
+                        <div class="field-label">Categoría <span class="req">✦</span></div>
+                        <select title="Categoría" aria-label="Categoría">
+                            <option value="" disabled selected>Selecciona una categoría</option>
+                            <option>Estadio</option>
+                            <option>Fan Zone</option>
+                            <option>Gastronomía</option>
+                            <option>Turismo</option>
+                            <option>Celebración</option>
+                        </select>
+                    </div>
+
+                    <!-- UBICACIÓN -->
+                    <div>
+                        <div class="field-label">Ubicación</div>
+                        <div class="location-input-wrap" style="margin-bottom:10px">
+                            <i class="fas fa-location-dot"></i>
+                            <input class="location-input" type="text"
+                                placeholder="Busca un estadio, parque o lugar..." />
+                        </div>
+                        <!-- MAPA SVG -->
+                        <div class="map-preview">
+                            <svg class="map-svg" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="400" height="120" fill="#1a1a2e" />
+                                <!-- Calles horizontales -->
+                                <line x1="0" y1="30" x2="400" y2="30" stroke="#2a2a4a" stroke-width="2" />
+                                <line x1="0" y1="60" x2="400" y2="60" stroke="#2a2a4a" stroke-width="2" />
+                                <line x1="0" y1="90" x2="400" y2="90" stroke="#2a2a4a" stroke-width="2" />
+                                <!-- Calles verticales -->
+                                <line x1="60" y1="0" x2="60" y2="120" stroke="#2a2a4a" stroke-width="2" />
+                                <line x1="140" y1="0" x2="140" y2="120" stroke="#2a2a4a" stroke-width="2" />
+                                <line x1="220" y1="0" x2="220" y2="120" stroke="#2a2a4a" stroke-width="2" />
+                                <line x1="300" y1="0" x2="300" y2="120" stroke="#2a2a4a" stroke-width="2" />
+                                <line x1="380" y1="0" x2="380" y2="120" stroke="#2a2a4a" stroke-width="2" />
+                                <!-- Bloques -->
+                                <rect x="62" y="32" width="76" height="26" rx="3" fill="#22224a" />
+                                <rect x="62" y="62" width="76" height="26" rx="3" fill="#22224a" />
+                                <rect x="142" y="32" width="76" height="26" rx="3" fill="#22224a" />
+                                <rect x="222" y="62" width="76" height="26" rx="3" fill="#22224a" />
+                                <rect x="302" y="32" width="76" height="26" rx="3" fill="#22224a" />
+                                <rect x="302" y="62" width="76" height="26" rx="3" fill="#22224a" />
+                                <!-- PIN -->
+                                <circle cx="200" cy="55" r="18" fill="#ffc107" opacity=".9" />
+                                <text x="200" y="61" text-anchor="middle" font-size="14" fill="#001f5b">📍</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- VISIBILIDAD -->
+                    <div class="visibility-section">
+                        <div class="visibility-label">VISIBILIDAD</div>
+                        <div class="radio-group">
+                            <label class="radio-opt">
+                                <div class="avatar-dot"></div>
+                                <input type="radio" name="visibility" value="publica" checked />
+                                Pública
+                            </label>
+                            <label class="radio-opt">
+                                <input type="radio" name="visibility" value="comunidad" />
+                                Solo Comunidad
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <div class="autosave"><i class="fas fa-rotate"></i> Auto-guardado en borradores</div>
+                <div class="footer-btns">
+                    <button class="btn-save">Guardar Borrador</button>
+                    <button class="btn-publish"><i class="fas fa-rocket"></i> Publicar Experiencia</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Contador de caracteres
+        const ta = document.querySelector('textarea');
+        const cc = document.querySelector('.char-count');
+        ta.addEventListener('input', () => cc.textContent = ta.value.length + '/500');
+
+        // Cerrar modal
+        document.querySelector('.close-btn').addEventListener('click', () => {
+            document.querySelector('.overlay').style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>

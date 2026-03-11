@@ -6,7 +6,7 @@
 
 body {
   font-family: "Roboto", sans-serif;
-  background-color: #8d949a;
+  background-color: #f0f2f5;
   color: #333;
   -webkit-font-smoothing: antialiased;
 }
@@ -67,8 +67,10 @@ body {
 
 /* Botón de perfil amarillo */
 .nav-links .profile-btn {
-  background-color: #ffc107; /* Amarillo Tigres */
-  color: #001f5b; /* Texto azul */
+  background-color: #ffc107;
+  /* Amarillo Tigres */
+  color: #001f5b;
+  /* Texto azul */
   padding: 8px 15px;
   border-radius: 5px;
   font-weight: 500;
@@ -76,22 +78,26 @@ body {
 
 .nav-links .profile-btn:hover {
   opacity: 1;
-  background-color: #e0a800; /* Amarillo un poco más oscuro al pasar el mouse */
+  background-color: #e0a800;
+  /* Amarillo un poco más oscuro al pasar el mouse */
 }
 
 /* --- ESTILOS DEL CONTENEDOR PRINCIPAL DEL PERFIL --- */
 .profile-container {
   max-width: 950px;
-  margin: 100px auto 40px; /* 100px arriba para no taparse con el header fijo */
+  margin: 100px auto 40px;
+  /* 100px arriba para no taparse con el header fijo */
   background-color: white;
   border-radius: 15px;
-  overflow: hidden; /* Para que la portada respete las esquinas redondeadas */
+  overflow: hidden;
+  /* Para que la portada respete las esquinas redondeadas */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* --- PORTADA Y FOTO DE PERFIL --- */
 .cover-section {
-  position: relative; /* Necesario para posicionar elementos dentro */
+  position: relative;
+  /* Necesario para posicionar elementos dentro */
   height: 300px;
   overflow: hidden;
 }
@@ -99,19 +105,19 @@ body {
 .cover-photo {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Asegura que la imagen llene el espacio sin deformarse */
+  object-fit: cover;
+  /* Asegura que la imagen llene el espacio sin deformarse */
 }
 
 /* Iconos de cámara para editar */
 .edit-cover-icon,
 .edit-profile-photo-icon {
   position: absolute;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.7
-  ); /* Fondo blanco semi-transparente */
+  background-color: rgba(255,
+      255,
+      255,
+      0.7);
+  /* Fondo blanco semi-transparente */
   color: #555;
   width: 35px;
   height: 35px;
@@ -195,7 +201,8 @@ body {
 
 /* Botón Editar Perfil azul */
 .edit-profile-btn {
-  background-color: #001f5b; /* Azul marino */
+  background-color: #001f5b;
+  /* Azul marino */
   color: white;
   border: none;
   padding: 10px 20px;

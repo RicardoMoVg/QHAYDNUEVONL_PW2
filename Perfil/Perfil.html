@@ -1,93 +1,356 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Perfil de Usuario</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="Perfil.css" />
-  </head>
-  <body>
-    <header class="main-header">
-      <div class="header-container">
-        <div class="logo-area">
-          <img src="Recursos/logo.png" alt="Logo UANL" class="logo-img" />
-        </div>
 
-        <div class="search-area">
-          <input type="text" placeholder="Buscar publicaciones..." />
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perfil de Usuario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        <nav class="nav-links">
-          <a href="Dashboard.html"><i class="fas fa-home"></i> Inicio</a>
-          <a href="#"><i class="fas fa-plus"></i> Publicar</a>
-          <a href="#"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-        </nav>
+    body {
+      font-family: "Roboto", sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- HEADER --- */
+    .main-header {
+      background-color: #001f5b;
+      color: white;
+      padding: 10px 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 16px;
+    }
+
+    .logo-img {
+      height: 50px;
+      border-radius: 8px;
+    }
+
+    .search-area input {
+      width: 400px;
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: none;
+      background-color: white;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover {
+      opacity: 0.8;
+    }
+
+    .nav-links .profile-btn {
+      background-color: #ffc107;
+      color: #001f5b;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-weight: 500;
+    }
+
+    .nav-links .profile-btn:hover {
+      opacity: 1;
+      background-color: #e0a800;
+    }
+
+    /* --- CONTENEDOR PRINCIPAL --- */
+    .profile-container {
+      max-width: 950px;
+      margin: 80px auto 40px;
+      /* 80px = altura del header */
+      background-color: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* --- PORTADA --- */
+    .cover-section {
+      position: relative;
+      height: 220px;
+      /* altura fija para la portada */
+      overflow: visible;
+      /* permite que la foto de perfil sobresalga */
+    }
+
+    .cover-photo {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      border-radius: 15px 15px 0 0;
+    }
+
+    /* Icono editar portada */
+    .edit-cover-icon {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background-color: rgba(255, 255, 255, 0.85);
+      color: #555;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      transition: background-color 0.2s;
+      z-index: 2;
+    }
+
+    .edit-cover-icon:hover {
+      background-color: white;
+    }
+
+    /* --- FOTO DE PERFIL --- */
+    .profile-photo-wrapper {
+      position: absolute;
+      bottom: -55px;
+      /* mitad sobresale abajo de la portada */
+      left: 36px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 5px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 3;
+    }
+
+    .profile-photo {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .edit-profile-photo-icon {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background-color: #ffc107;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      border: 2px solid white;
+      transition: background-color 0.2s;
+    }
+
+    .edit-profile-photo-icon:hover {
+      background-color: #e0a800;
+    }
+
+    /* --- SECCIÓN DE INFORMACIÓN --- */
+    .user-info-section {
+      padding: 70px 36px 24px;
+      /* 70px arriba = espacio para la foto que sobresale (55px + margen) */
+    }
+
+    .info-and-button {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .text-info h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #001f5b;
+    }
+
+    .meta-info {
+      font-size: 13px;
+      color: #777;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .meta-info span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Botón Editar Perfil */
+    .edit-profile-btn {
+      background-color: #001f5b;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .edit-profile-btn:hover {
+      background-color: #00133a;
+    }
+
+    .user-bio {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    /* --- DIVISOR --- */
+    .section-divider {
+      border: 0;
+      border-top: 1px solid #eee;
+      margin: 20px 36px 0;
+    }
+
+    /* --- ESTADÍSTICAS --- */
+    .stats-section {
+      padding: 20px 36px 30px;
+      display: flex;
+      gap: 40px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-number {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffc107;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <img src="../Recursos/logo.png" alt="Logo UANL" class="logo-img" />
       </div>
-    </header>
 
-    <main class="profile-container">
-      <div class="cover-section">
-        <img
-          src="Recursos/portada.jpg"
-          alt="Portada Monterrey"
-          class="cover-photo"
-        />
+      <div class="search-area">
+        <input type="text" placeholder="Buscar publicaciones..." />
+      </div>
 
-        <div class="edit-cover-icon">
+      <nav class="nav-links">
+        <a href="../index.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="../index.html"><i class="fas fa-plus"></i> Publicar</a>
+        <a href="Perfil.html" class="profile-btn active"><i class="fas fa-user"></i> Perfil</a>
+        <a href="../Login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="profile-container">
+    <!-- PORTADA -->
+    <div class="cover-section">
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=950&h=220&fit=crop" alt="Portada"
+        class="cover-photo" />
+      <div class="edit-cover-icon" title="Editar portada">
+        <i class="fas fa-camera"></i>
+      </div>
+      <!-- FOTO DE PERFIL -->
+      <div class="profile-photo-wrapper">
+        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&h=120&fit=crop&crop=face"
+          alt="Foto de perfil de Carlos" class="profile-photo" />
+        <div class="edit-profile-photo-icon" title="Editar foto">
           <i class="fas fa-camera"></i>
         </div>
+      </div>
+    </div>
 
-        <div class="profile-photo-wrapper">
-          <img
-            src="Recursos/perfil.jpg"
-            alt="Foto de perfil de Carlos"
-            class="profile-photo"
-          />
-          <div class="edit-profile-photo-icon">
-            <i class="fas fa-camera"></i>
+    <!-- INFORMACIÓN -->
+    <div class="user-info-section">
+      <div class="info-and-button">
+        <div class="text-info">
+          <h1>Carlos Rodríguez</h1>
+          <div class="meta-info">
+            <span><i class="fas fa-map-marker-alt"></i> Monterrey, Nuevo León</span>
+            <span><i class="fas fa-calendar-alt"></i> Miembro desde Enero 2026</span>
           </div>
         </div>
+        <button class="edit-profile-btn">
+          <i class="fas fa-pen"></i> Editar perfil
+        </button>
       </div>
+      <p class="user-bio">Descripción del perfil</p>
+    </div>
 
-      <div class="user-info-section">
-        <div class="info-and-button">
-          <div class="text-info">
-            <h1>Carlos Rodríguez</h1>
-            <div class="meta-info">
-              <span
-                ><i class="fas fa-map-marker-alt"></i> Monterrey, Nuevo
-                León</span
-              >
-              <span
-                ><i class="fas fa-calendar-alt"></i> Miembro desde Enero
-                2026</span
-              >
-            </div>
-          </div>
-          <button class="edit-profile-btn">
-            <i class="fas fa-pen"></i> Editar perfil
-          </button>
-        </div>
+    <hr class="section-divider" />
 
-        <p class="user-bio">Descripción del perfil</p>
+    <!-- ESTADÍSTICAS -->
+    <div class="stats-section">
+      <div class="stat-item">
+        <span class="stat-number">2</span>
+        <span class="stat-label">Publicaciones</span>
       </div>
+    </div>
+  </main>
+</body>
 
-      <hr class="section-divider" />
-
-      <div class="stats-section">
-        <div class="stat-item">
-          <span class="stat-number">2</span>
-          <span class="stat-label">Publicaciones</span>
-        </div>
-      </div>
-    </main>
-  </body>
 </html>

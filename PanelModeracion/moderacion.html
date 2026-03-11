@@ -4,25 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Moderación - Mundial MTY</title>
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="moderacion.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
     <header class="main-header">
-        <div class="logo-section">
-            <div class="logo-icon"><i class="fas fa-futbol"></i></div>
-            <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
-            <input type="text" placeholder="Buscar publicaciones..." class="search-bar">
+      <div class="header-container">
+        <div class="logo-area">
+          <img src="../Recursos/logo.png" alt="Logo UANL" class="logo-img" />
         </div>
-        <nav class="nav-menu" id="navMenu">
-            <a href="#"><i class="fas fa-home"></i> Inicio</a>
-            <a href="#"><i class="fas fa-plus"></i> Publicar</a>
-            <a href="#"><i class="fas fa-chart-line"></i> Tendencias</a>
-            <a href="#"><i class="fas fa-user"></i> Perfil</a>
-            <button class="btn-mod"><i class="fas fa-shield-alt"></i> Moderación</button>
-            <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+
+        <div class="search-area">
+          <input type="text" placeholder="Buscar publicaciones..." />
+        </div>
+
+        <nav class="nav-links">
+          <a href="../index.html"><i class="fas fa-home"></i> Inicio</a>
+          <a href="../index.html"><i class="fas fa-plus"></i> Publicar</a>
+          <a href="../Perfil/Perfil.html" class="profile-btn"><i class="fas fa-user"></i> Perfil</a>
+          <a href="#" class="active" style="background:#0284c7; color:white; padding:8px 15px; border-radius:5px;"><i class="fas fa-shield-alt"></i> Moderación</a>
+          <a href="../Login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
         </nav>
+      </div>
     </header>
 
     <main class="container">
