@@ -4,133 +4,323 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Post Completo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <title>Publicación — ¿Qué hay de nuevo, NL?</title>
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Iconos y Mapas -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <link rel="stylesheet" href="Post.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Estilo Local -->
+  <link rel="stylesheet" href="Post.css?v=2" />
 </head>
 
-<body>
+<body style="background-color: #0a0e1a;">
+
+  <!-- ══════════ HEADER ══════════ -->
   <header class="main-header">
     <div class="header-container">
       <div class="logo-area">
-        <img src="../Recursos/logo.png" alt="Logo UANL" class="logo-img" />
+        <img src="../Recursos/logo.png" alt="Logo" class="logo-img" />
       </div>
-
       <div class="search-area">
         <input type="text" placeholder="Buscar publicaciones..." />
       </div>
-
       <nav class="nav-links">
         <a href="../index.html"><i class="fas fa-home"></i> Inicio</a>
         <a href="../index.html"><i class="fas fa-plus"></i> Publicar</a>
-        <a href="../Perfil/Perfil.html" class="profile-btn"><i class="fas fa-user"></i> Perfil</a>
-        <a href="../Login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+        <a href="../Perfil/Perfil.html" class="profile-btn">
+          <i class="fas fa-user"></i> <span id="navNombre">Perfil</span>
+        </a>
+        <a href="../Login/login.html" id="btnCerrarSesion">
+          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
       </nav>
     </div>
   </header>
 
-  <main class="post-detail-container">
-    <div class="main-content">
-      <article class="post-full-card">
-        <div class="post-hero">
-          <img src="../Recursos/tacos.jpg" alt="Tacos" />
-          <span class="category-badge">Gastronomía</span>
-          <div class="hero-actions">
-          </div>
-        </div>
+  <!-- ══════════ CONTENIDO ══════════ -->
+  <main class="page-wrapper">
 
-        <div class="post-body">
-          <div class="gallery-section">
-            <h3>Galería de imágenes <span>3</span></h3>
-            <div class="gallery-grid">
-              <img src="../Recursos/tacos1.jpg" alt="Gallery" />
-              <img src="../Recursos/tacos2.jpg" alt="Gallery" />
-              <img src="../Recursos/tacos1.jpg" alt="Gallery" />
-            </div>
+    <article class="post-card">
+
+      <!-- CARRUSEL -->
+      <div class="carousel-wrapper">
+        <div class="carousel-viewport" id="carouselViewport">
+          <div class="carousel-track" id="carouselTrack"></div>
+
+          <div class="carousel-topbar">
+            <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Inicio</a>
+            <span class="category-badge" id="postCategoryBadge">...</span>
           </div>
 
-          <div class="author-row">
-            <div class="author-meta">
-              <img src="../Recursos/perfil.jpg" alt="User" class="author-img" />
-              <div>
-                <h4>Carlos Rodríguez</h4>
-                <span>Experto local • 212 publicaciones</span>
+          <div class="carousel-bottom-overlay">
+            <div class="carousel-meta-row">
+              <div class="carousel-author">
+                <img src="../Recursos/perfil.jpg" class="carousel-avatar" alt="Avatar" />
+                <div>
+                  <div class="carousel-author-name" id="postAuthorName">Cargando...</div>
+                  <div class="carousel-author-date" id="postAuthorSub"></div>
+                </div>
               </div>
-            </div>
-            <div class="like-actions">
-              <button class="btn-like">
-                <i class="far fa-heart"></i> 234
+              <button class="btn-like-post" id="likeBtn">
+                <i class="far fa-heart"></i> <span id="likeCount">0</span>
               </button>
-              <i class="fas fa-ellipsis-h"></i>
             </div>
+            <h1 class="carousel-title" id="postTitle">Cargando...</h1>
           </div>
 
-          <h1 class="post-title">Los mejores tacos al pastor de Monterrey</h1>
-
-          <div class="post-description">
-            <h3>Descripción</h3>
-            <p>
-              Descubre los tacos más auténticos de la ciudad. Una experiencia
-              gastronómica imperdible para los visitantes del Mundial. El
-              Barrio Antiguo es conocido por su rica tradición culinaria y
-              estos tacos al pastor son simplemente excepcionales.
-            </p>
-          </div>
-
-          <div class="tags-container">
-            <span class="tag">#Mundial2026</span>
-            <span class="tag">#Monterrey</span>
-            <span class="tag">#Gastronomía</span>
-            <span class="tag">#BarrioAntiguo</span>
-          </div>
+          <button class="carousel-arrow left" id="carouselPrev"><i class="fas fa-chevron-left"></i></button>
+          <button class="carousel-arrow right" id="carouselNext"><i class="fas fa-chevron-right"></i></button>
         </div>
-      </article>
-
-      <section class="comments-section">
-        <h3>
-          <i class="far fa-comment-dots"></i> Comentarios <span>3</span>
-        </h3>
-
-        <div class="comment-input-area">
-          <img src="../Recursos/perfil.jpg" alt="User" class="mini-avatar" />
-          <div class="input-wrapper">
-            <textarea placeholder="Comparte tu opinión o experiencia sobre este lugar..."></textarea>
-            <div class="input-footer">
-              <span>0 / 500 caracteres</span>
-              <button class="btn-publish">Publicar</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="comments-list">
-          <div class="comment-item">
-            <img src="../Recursos/perfil.jpg" alt="User" class="comment-avatar" />
-            <div class="comment-content">
-              <h5>Luis Martínez <span>Hace 2 horas</span></h5>
-              <p>
-                ¡Excelente recomendación! Definitivamente lo visitaré durante
-                mi estancia.
-              </p>
-              <div class="comment-actions">
-                <span><i class="far fa-heart"></i> 12</span>
-                <button>Responder</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <aside class="sidebar">
-      <div class="ad-card">
-        <img src="../Recursos/BK.jpg" alt="Anuncio Burger" />
       </div>
-      <div class="ad-card">
-        <img src="../Recursos/ad2.jpg" alt="Anuncio CR7" />
+
+      <!-- CUERPO -->
+      <div class="post-body">
+        <div class="post-info-grid">
+          <div class="info-card">
+            <div class="info-card-icon author"><i class="fas fa-user"></i></div>
+            <div class="info-card-content">
+              <div class="info-card-label">Autor</div>
+              <div class="info-card-value" id="infoAuthor">—</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon date"><i class="fas fa-calendar-alt"></i></div>
+            <div class="info-card-content">
+              <div class="info-card-label">Fecha</div>
+              <div class="info-card-value" id="infoDate">—</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon location"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="info-card-content">
+              <div class="info-card-label">Ubicación</div>
+              <div class="info-card-value" id="infoLocation">—</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon category"><i class="fas fa-layer-group"></i></div>
+            <div class="info-card-content">
+              <div class="info-card-label">Categoría</div>
+              <div class="info-card-value" id="infoCategory">—</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon likes"><i class="fas fa-heart"></i></div>
+            <div class="info-card-content">
+              <div class="info-card-label">Likes</div>
+              <div class="info-card-value" id="infoLikes">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-description-section">
+          <p class="post-description-text" id="postDescriptionText"></p>
+        </div>
+
+        <div class="tags-row" id="tagsContainer"></div>
+
+        <div id="mapSection" style="display:none;">
+          <div class="map-container" id="postMap"></div>
+        </div>
       </div>
-    </aside>
+    </article>
+
+    <!-- COMENTARIOS -->
+    <section class="comments-card">
+      <div class="comments-header">
+        <h2>Comentarios</h2>
+        <span class="count-badge" id="commentCount">0</span>
+      </div>
+
+      <div class="comment-compose">
+        <img src="../Recursos/perfil.jpg" class="compose-avatar" alt="Yo" />
+        <div class="compose-box">
+          <textarea id="commentInput" placeholder="Escribe un comentario..." maxlength="500"></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <span id="charCountComment" style="font-size:12px; color:#64748b;">0 / 500</span>
+            <button class="btn-send" id="btnPublishComment">Publicar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="commentsList">
+        <p style="text-align:center; padding:20px; color:#64748b;">Cargando comentarios...</p>
+      </div>
+    </section>
+
   </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const API = 'http://localhost:3000';
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('id');
+
+    // ── Sesión ──────────────────────────────────────
+    const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
+    if (!usuario) window.location.href = '../Login/login.html';
+    else {
+      const nav = document.getElementById('navNombre');
+      if (nav) nav.textContent = usuario.nombre;
+    }
+
+    const cerrarBtn = document.getElementById('btnCerrarSesion');
+    if (cerrarBtn) {
+      cerrarBtn.addEventListener('click', e => {
+        e.preventDefault();
+        sessionStorage.removeItem('usuario');
+        window.location.href = '../Login/login.html';
+      });
+    }
+
+    if (!postId) {
+      document.querySelector('.page-wrapper').innerHTML = '<h1 style="color:white; text-align:center; padding:50px;">Publicación no encontrada</h1>';
+    } else {
+      cargarPost();
+      cargarComentarios();
+    }
+
+    // ── Utilidades ──────────────────────────────────
+    function escHTML(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function timeAgo(dateStr) {
+      const diff = (Date.now() - new Date(dateStr)) / 1000;
+      if (diff < 60) return 'Ahora';
+      if (diff < 3600) return `Hace ${Math.floor(diff / 60)}m`;
+      if (diff < 86400) return `Hace ${Math.floor(diff / 3600)}h`;
+      return new Date(dateStr).toLocaleDateString();
+    }
+
+    function parseImages(imagen) {
+      if (!imagen) return [];
+      try { return JSON.parse(imagen); } catch { return [imagen]; }
+    }
+
+    // ── Carrusel ────────────────────────────────────
+    let carouselImages = [];
+    let carouselIndex = 0;
+
+    function initCarousel(imagenes) {
+      carouselImages = imagenes.length ? imagenes : ['../Recursos/tacos.jpg'];
+      const track = document.getElementById('carouselTrack');
+      if (!track) return;
+
+      track.innerHTML = carouselImages.map(src => `
+            <div class="carousel-slide"><img src="${escHTML(src)}" onerror="this.src='../Recursos/tacos.jpg'"></div>
+        `).join('');
+
+      updateCarousel();
+    }
+
+    function updateCarousel() {
+      const track = document.getElementById('carouselTrack');
+      if (track) track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+
+      const prev = document.getElementById('carouselPrev');
+      const next = document.getElementById('carouselNext');
+      if (prev) prev.style.display = carouselIndex === 0 ? 'none' : 'block';
+      if (next) next.style.display = carouselIndex === carouselImages.length - 1 ? 'none' : 'block';
+    }
+
+    document.getElementById('carouselPrev')?.addEventListener('click', () => { if (carouselIndex > 0) { carouselIndex--; updateCarousel(); } });
+    document.getElementById('carouselNext')?.addEventListener('click', () => { if (carouselIndex < carouselImages.length - 1) { carouselIndex++; updateCarousel(); } });
+
+    // ── Datos ───────────────────────────────────────
+    async function cargarPost() {
+      try {
+        const res = await fetch(`${API}/api/posts/${postId}`);
+        const post = await res.json();
+
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('postTitle', post.titulo);
+        set('postAuthorName', post.autor);
+        set('postAuthorSub', `Publicado el ${new Date(post.fecha_creacion).toLocaleDateString()}`);
+        set('postCategoryBadge', post.categoria);
+        set('postDescriptionText', post.descripcion);
+        set('likeCount', post.likes || 0);
+
+        set('infoAuthor', post.autor);
+        set('infoDate', new Date(post.fecha_creacion).toLocaleDateString());
+        set('infoLocation', post.ubicacion || 'Sin ubicación');
+        set('infoCategory', post.categoria);
+        set('infoLikes', `${post.likes || 0} likes`);
+
+        initCarousel(parseImages(post.imagen));
+
+        if (post.ubicacion) {
+          const tags = document.getElementById('tagsContainer');
+          if (tags) tags.innerHTML = `<span class="tag"><i class="fas fa-map-marker-alt"></i> ${escHTML(post.ubicacion)}</span>`;
+
+          document.getElementById('mapSection').style.display = 'block';
+          const map = L.map('postMap').setView([25.6866, -100.3161], 12);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+          fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(post.ubicacion)}&limit=1`)
+            .then(r => r.json())
+            .then(data => {
+              if (data[0]) {
+                const ll = [data[0].lat, data[0].lon];
+                map.setView(ll, 15);
+                L.marker(ll).addTo(map).bindPopup(escHTML(post.ubicacion)).openPopup();
+              }
+            });
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function cargarComentarios() {
+      const list = document.getElementById('commentsList');
+      if (!list) return;
+
+      try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments`);
+        const comments = await res.json();
+
+        document.getElementById('commentCount').textContent = comments.length;
+
+        if (!comments.length) {
+          list.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">No hay comentarios aún.</p>';
+          return;
+        }
+
+        list.innerHTML = comments.map(c => `
+                <div class="comment-item">
+                    <img src="../Recursos/perfil.jpg" class="comment-avatar">
+                    <div style="flex:1;">
+                        <div class="comment-author">${escHTML(c.autor)} <span class="comment-time">${timeAgo(c.fecha_creacion)}</span></div>
+                        <div class="comment-text">${escHTML(c.contenido)}</div>
+                    </div>
+                </div>
+            `).join('');
+      } catch (err) { console.error(err); }
+    }
+
+    // ── Publicar ────────────────────────────────────
+    document.getElementById('btnPublishComment')?.addEventListener('click', async function () {
+      const input = document.getElementById('commentInput');
+      const content = input.value.trim();
+      if (!content) return;
+
+      this.disabled = true;
+      this.textContent = 'Enviando...';
+
+      try {
+        await fetch(`${API}/api/posts/${postId}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contenido: content, id_usuario: usuario.id })
+        });
+        input.value = '';
+        await cargarComentarios();
+      } catch (err) { alert('Error al comentar'); }
+      finally { this.disabled = false; this.textContent = 'Publicar'; }
+    });
+  </script>
 </body>
 
 </html>

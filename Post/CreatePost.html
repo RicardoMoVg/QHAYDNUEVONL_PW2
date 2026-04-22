@@ -7,6 +7,7 @@
     <title>Modal Post</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * {
             margin: 0;
@@ -361,40 +362,61 @@
         .map-preview {
             border-radius: 10px;
             overflow: hidden;
-            height: 120px;
+            height: 200px;
             background: #1a1a2e;
             position: relative;
             border: 1.5px solid #2e2e5a;
         }
 
-        .map-bg {
+        /* PREVISUALIZACIÓN DE ARCHIVOS */
+        #imagePreview {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 80px;
+            background: #1e1e40;
+            border: 1px solid #2e2e5a;
+        }
+
+        .preview-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: .6;
         }
 
-        .map-pin {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -60%);
-            width: 38px;
-            height: 38px;
-            background: #ffc107;
-            border-radius: 50%;
+        .preview-item .video-icon {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            color: #001f5b;
-            box-shadow: 0 4px 14px rgba(255, 193, 7, .4);
+            height: 100%;
+            color: #ffc107;
+            font-size: 22px;
         }
 
-        /* Mapa SVG inline */
-        .map-svg {
-            width: 100%;
-            height: 100%;
+        .preview-item .file-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, .65);
+            font-size: 9px;
+            padding: 3px 5px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* VISIBILIDAD */
@@ -530,11 +552,18 @@
                             <div class="dropzone-icon"><i class="fas fa-file-arrow-up"></i></div>
                             <h3>Suelta tus mejores momentos aquí</h3>
                             <p>Sube fotos o videos de alta calidad del estadio o de los Fan<br />Zones de la ciudad.</p>
-                            <label for="file-upload" class="select-btn" style="display:inline-block; margin-top:5px;">Seleccionar Archivos</label>
-                            <input id="file-upload" type="file" style="display:none;" multiple accept="video/mp4,video/quicktime,image/jpeg,image/png" />
+                            <label for="file-upload" class="select-btn"
+                                style="display:inline-block; margin-top:5px;">Seleccionar Archivos</label>
+                            <input id="file-upload" type="file" style="display:none;" multiple
+                                accept="video/mp4,video/quicktime,image/jpeg,image/png" />
                             <div class="file-types">MP4, MOV, JPG, PNG • MÁX 50MB</div>
+                            <div id="imgPreviewGrid"
+                                style="display:none;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;margin-top:10px;max-height:110px;overflow-y:auto;">
+                            </div>
                         </div>
                     </div>
+
+                    <div id="imagePreview"></div>
 
                     <div class="rules-box">
                         <div class="rules-title"><i class="fas fa-shield-halved"></i> Reglas de la Comunidad</div>
@@ -561,8 +590,8 @@
 
                     <!-- CATEGORÍA -->
                     <div>
-                        <div class="field-label">Categoría <span class="req">✦</span></div>
-                        <select title="Categoría" aria-label="Categoría">
+                        <div class="field-label">Categoría <span class="req">❖</span></div>
+                        <select id="cpCategoria" title="Categoría" aria-label="Categoría">
                             <option value="" disabled selected>Selecciona una categoría</option>
                             <option>Estadio</option>
                             <option>Fan Zone</option>
@@ -577,34 +606,11 @@
                         <div class="field-label">Ubicación</div>
                         <div class="location-input-wrap" style="margin-bottom:10px">
                             <i class="fas fa-location-dot"></i>
-                            <input class="location-input" type="text"
+                            <input id="cpUbicacion" class="location-input" type="text"
                                 placeholder="Busca un estadio, parque o lugar..." />
                         </div>
-                        <!-- MAPA SVG -->
-                        <div class="map-preview">
-                            <svg class="map-svg" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="400" height="120" fill="#1a1a2e" />
-                                <!-- Calles horizontales -->
-                                <line x1="0" y1="30" x2="400" y2="30" stroke="#2a2a4a" stroke-width="2" />
-                                <line x1="0" y1="60" x2="400" y2="60" stroke="#2a2a4a" stroke-width="2" />
-                                <line x1="0" y1="90" x2="400" y2="90" stroke="#2a2a4a" stroke-width="2" />
-                                <!-- Calles verticales -->
-                                <line x1="60" y1="0" x2="60" y2="120" stroke="#2a2a4a" stroke-width="2" />
-                                <line x1="140" y1="0" x2="140" y2="120" stroke="#2a2a4a" stroke-width="2" />
-                                <line x1="220" y1="0" x2="220" y2="120" stroke="#2a2a4a" stroke-width="2" />
-                                <line x1="300" y1="0" x2="300" y2="120" stroke="#2a2a4a" stroke-width="2" />
-                                <line x1="380" y1="0" x2="380" y2="120" stroke="#2a2a4a" stroke-width="2" />
-                                <!-- Bloques -->
-                                <rect x="62" y="32" width="76" height="26" rx="3" fill="#22224a" />
-                                <rect x="62" y="62" width="76" height="26" rx="3" fill="#22224a" />
-                                <rect x="142" y="32" width="76" height="26" rx="3" fill="#22224a" />
-                                <rect x="222" y="62" width="76" height="26" rx="3" fill="#22224a" />
-                                <rect x="302" y="32" width="76" height="26" rx="3" fill="#22224a" />
-                                <rect x="302" y="62" width="76" height="26" rx="3" fill="#22224a" />
-                                <!-- PIN -->
-                                <circle cx="200" cy="55" r="18" fill="#ffc107" opacity=".9" />
-                                <text x="200" y="61" text-anchor="middle" font-size="14" fill="#001f5b">📍</text>
-                            </svg>
+                        <div class="map-preview" style="padding:0;overflow:hidden;">
+                            <div id="cpMap" style="height:100%;width:100%;min-height:120px;"></div>
                         </div>
                     </div>
 
@@ -639,16 +645,138 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Contador de caracteres
+        // ── Mapa Leaflet ──
+        const cpMap = L.map('cpMap', { zoomControl: true, attributionControl: false })
+            .setView([25.6866, -100.3161], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(cpMap);
+        let cpMarker;
+
+        // ── Geocodificación al escribir ──
+        let geoTimer;
+        document.getElementById('cpUbicacion').addEventListener('input', function () {
+            clearTimeout(geoTimer);
+            const q = this.value.trim();
+            if (q.length < 3) return;
+            geoTimer = setTimeout(async () => {
+                try {
+                    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ', Nuevo León, México')}&limit=1&accept-language=es`);
+                    const d = await r.json();
+                    if (d.length) {
+                        const ll = [parseFloat(d[0].lat), parseFloat(d[0].lon)];
+                        cpMap.setView(ll, 15);
+                        if (cpMarker) { cpMarker.setLatLng(ll); cpMarker.getPopup().setContent(q).openOn(cpMap); }
+                        else cpMarker = L.marker(ll).addTo(cpMap).bindPopup(q).openPopup();
+                    }
+                } catch (e) { }
+            }, 800);
+        });
+
+        // ── Previsualización de imágenes ──
+        let selectedImages = [];
+        document.getElementById('file-upload').addEventListener('change', function () {
+            selectedImages = [];
+            const grid = document.getElementById('imgPreviewGrid');
+            grid.innerHTML = '';
+            const imgFiles = Array.from(this.files).filter(f => f.type.startsWith('image/'));
+            if (!imgFiles.length) { grid.style.display = 'none'; return; }
+            grid.style.display = 'grid';
+            imgFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    selectedImages.push(ev.target.result);
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    img.title = file.name;
+                    img.style.cssText = 'width:100%;height:68px;object-fit:cover;border-radius:6px;border:2px solid #ffc107;';
+                    grid.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // ── Contador de caracteres ──
         const ta = document.querySelector('textarea');
         const cc = document.querySelector('.char-count');
-        ta.addEventListener('input', () => cc.textContent = ta.value.length + '/500');
+        if (ta && cc) ta.addEventListener('input', () => cc.textContent = ta.value.length + '/500');
 
-        // Cerrar modal
+        // ── Cerrar modal ──
         document.querySelector('.close-btn').addEventListener('click', () => {
             document.querySelector('.overlay').style.display = 'none';
         });
+
+        const grid = document.createElement('div');
+        grid.className = 'preview-grid';
+
+        Array.from(this.files).forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+                item.appendChild(img);
+            } else {
+                const icon = document.createElement('div');
+                icon.className = 'video-icon';
+                icon.innerHTML = '<i class="fas fa-film"></i><span style="font-size:10px;margin-top:4px;color:#aaa;">VIDEO</span>';
+                item.appendChild(icon);
+            }
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'file-name';
+            nameEl.textContent = file.name;
+            item.appendChild(nameEl);
+            grid.appendChild(item);
+        });
+
+        preview.appendChild(grid);
+        preview.style.display = 'block';
+
+        // ── MAPA LEAFLET ──
+        const mapCreate = L.map('mapCreate').setView([25.6866, -100.3161], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(mapCreate);
+
+        const mapMarker = L.marker([25.6866, -100.3161]).addTo(mapCreate)
+            .bindPopup('Monterrey, Nuevo León').openPopup();
+
+        // ── GEOCODIFICACIÓN ──
+        const locationInput = document.querySelector('.location-input');
+        let geocodeTimer;
+
+        locationInput.addEventListener('input', function () {
+            clearTimeout(geocodeTimer);
+            geocodeTimer = setTimeout(() => buscarDireccion(this.value), 900);
+        });
+
+        locationInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(geocodeTimer);
+                buscarDireccion(this.value);
+            }
+        });
+
+        async function buscarDireccion(query) {
+            if (!query.trim()) return;
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=es`;
+                const data = await fetch(url).then(r => r.json());
+                if (data.length) {
+                    const { lat, lon, display_name } = data[0];
+                    const latlng = [parseFloat(lat), parseFloat(lon)];
+                    mapMarker.setLatLng(latlng);
+                    mapCreate.setView(latlng, 15);
+                    mapMarker.bindPopup(display_name.split(',').slice(0, 3).join(', ')).openPopup();
+                }
+            } catch (e) {
+                console.error('Error de geocodificación:', e);
+            }
+        }
     </script>
 </body>
 

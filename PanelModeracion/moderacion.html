@@ -15,17 +15,15 @@
         <div class="logo-area">
           <img src="../Recursos/logo.png" alt="Logo UANL" class="logo-img" />
         </div>
-
         <div class="search-area">
           <input type="text" placeholder="Buscar publicaciones..." />
         </div>
-
         <nav class="nav-links">
           <a href="../index.html"><i class="fas fa-home"></i> Inicio</a>
           <a href="../index.html"><i class="fas fa-plus"></i> Publicar</a>
           <a href="../Perfil/Perfil.html" class="profile-btn"><i class="fas fa-user"></i> Perfil</a>
           <a href="#" class="active" style="background:#0284c7; color:white; padding:8px 15px; border-radius:5px;"><i class="fas fa-shield-alt"></i> Moderación</a>
-          <a href="../Login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+          <a href="../Login/login.html" id="btnCerrarSesion"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
         </nav>
       </div>
     </header>
@@ -43,30 +41,30 @@
             <div class="stat-card gold-border">
                 <div class="stat-info">
                     <span>Publicaciones</span>
-                    <strong>3</strong>
+                    <strong id="statPubs">—</strong>
                 </div>
                 <i class="fas fa-layer-group"></i>
             </div>
             <div class="stat-card blue-border">
                 <div class="stat-info">
                     <span>Usuarios</span>
-                    <strong>3</strong>
+                    <strong id="statUsers">—</strong>
                 </div>
                 <i class="fas fa-users"></i>
             </div>
             <div class="stat-card gray-border">
                 <div class="stat-info">
                     <span>Comentarios</span>
-                    <strong>2</strong>
+                    <strong id="statComments">—</strong>
                 </div>
                 <i class="fas fa-comment-dots"></i>
             </div>
             <div class="stat-card red-border">
                 <div class="stat-info">
-                    <span>Reportes</span>
-                    <strong class="text-red">2</strong>
+                    <span>Eliminaciones</span>
+                    <strong id="statDeleted" class="text-red">—</strong>
                 </div>
-                <i class="fas fa-exclamation-triangle"></i>
+                <i class="fas fa-trash-alt"></i>
             </div>
         </section>
 
@@ -81,127 +79,250 @@
             <div class="content-list">
                 <!-- Tab: Publicaciones -->
                 <div id="publicaciones" class="tab-content active">
-                    <article class="content-item">
-                        <div class="item-main">
-                            <img src="https://via.placeholder.com/100" alt="Tacos" class="item-img">
-                            <div class="item-details">
-                                <h3>Los mejores tacos al pastor de Monterrey</h3>
-                                <p>Por Carlos Rodríguez • <span class="badge-cat">Gastronomía</span> • 20 Feb 2026</p>
-                                <div class="item-actions">
-                                    <button class="action-btn"><i class="fas fa-eye"></i> Ver</button>
-                                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Eliminar</button>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="status-approved">Aprobada</span>
-                    </article>
-
-                    <article class="content-item">
-                        <div class="item-main">
-                            <img src="https://via.placeholder.com/100" alt="Concierto" class="item-img">
-                            <div class="item-details">
-                                <h3>Concierto pre-Mundial en Arena Monterrey</h3>
-                                <p>Por Luis Martínez • <span class="badge-cat">Eventos</span> • 22 Feb 2026</p>
-                                <div class="item-actions">
-                                    <button class="action-btn"><i class="fas fa-eye"></i> Ver</button>
-                                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Eliminar</button>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="status-approved">Aprobada</span>
-                    </article>
+                    <div class="admin-table-header"><h2>Gestión de Publicaciones</h2></div>
+                    <div id="listaPubs"><p style="padding:1rem;color:#666;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p></div>
                 </div>
 
                 <!-- Tab: Usuarios -->
                 <div id="usuarios" class="tab-content">
-                    <article class="content-item">
-                        <div class="item-main">
-                            <img src="https://via.placeholder.com/100" alt="Usuario" class="item-img user-avatar">
-                            <div class="item-details">
-                                <h3>Juan Pérez</h3>
-                                <p>juan.perez@email.com • Registrado: 15 Ene 2026</p>
-                                <div class="item-actions">
-                                    <button class="action-btn"><i class="fas fa-eye"></i> Ver</button>
-                                    <button class="action-btn delete-btn"><i class="fas fa-user-times"></i> Eliminar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
+                    <div class="admin-table-header"><h2>Gestión de Usuarios</h2></div>
+                    <div id="listaUsers"><p style="padding:1rem;color:#666;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p></div>
                 </div>
 
                 <!-- Tab: Comentarios -->
                 <div id="comentarios" class="tab-content">
-                    <article class="content-item">
-                        <div class="item-main">
-                            <div class="item-details">
-                                <p><em>"¡Excelente recomendación! Fui ayer y estaban deliciosos."</em></p>
-                                <p><small>En: <strong>Los mejores tacos...</strong> • Por: <strong>Ana G.</strong></small></p>
-                                <div class="item-actions">
-                                    <button class="action-btn"><i class="fas fa-eye"></i> Ver</button>
-                                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Eliminar Comentario</button>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
+                    <div class="admin-table-header"><h2>Gestión de Comentarios</h2></div>
+                    <div id="listaComments"><p style="padding:1rem;color:#666;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p></div>
                 </div>
 
                 <!-- Tab: Categorías -->
                 <div id="categorias" class="tab-content">
+                    <div class="admin-table-header"><h2>Gestión de Categorías</h2></div>
                     <div class="category-form">
-                        <input type="text" placeholder="Nombre de la nueva categoría..." class="search-bar" style="margin:0; flex:1;">
-                        <button class="btn-mod" style="width:auto; margin:0; white-space: nowrap;"><i class="fas fa-plus"></i> Crear Categoría</button>
+                        <input type="text" id="nuevaCategoria" placeholder="Nombre de la nueva categoría..." class="search-bar" style="margin:0; flex:1;">
+                        <button class="btn-mod" id="btnCrearCategoria" style="width:auto; margin:0; white-space: nowrap;"><i class="fas fa-plus"></i> Crear Categoría</button>
                     </div>
-
-                    <article class="content-item">
-                        <div class="item-main">
-                            <div class="item-details">
-                                <h3><i class="fas fa-utensils" style="color: var(--gold); margin-right: 10px;"></i> Gastronomía</h3>
-                                <p>15 Publicaciones activas</p>
-                            </div>
-                        </div>
-                        <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
-                    </article>
-
-                    <article class="content-item">
-                        <div class="item-main">
-                            <div class="item-details">
-                                <h3><i class="fas fa-calendar-alt" style="color: var(--gold); margin-right: 10px;"></i> Eventos</h3>
-                                <p>8 Publicaciones activas</p>
-                            </div>
-                        </div>
-                        <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
-                    </article>
+                    <div id="listaCats"><p style="padding:1rem;color:#666;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p></div>
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-        // Lógica de Pestañas (Tabs)
-        const tabBtns = document.querySelectorAll('.tab-btn');
+        const API = 'http://localhost:3000';
+
+        // --- Sesión y permisos ---
+        const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
+        if (!usuario || (usuario.rol !== 'moderador' && usuario.rol !== 'administrador')) {
+            window.location.href = '../Login/login.html';
+        }
+
+        document.getElementById('btnCerrarSesion').addEventListener('click', e => {
+            e.preventDefault();
+            sessionStorage.removeItem('usuario');
+            window.location.href = '../Login/login.html';
+        });
+
+        // --- Stats ---
+        async function cargarStats() {
+            try {
+                const s = await fetch(`${API}/api/stats`).then(r => r.json());
+                document.getElementById('statPubs').textContent     = s.publicaciones ?? '—';
+                document.getElementById('statUsers').textContent    = s.usuarios       ?? '—';
+                document.getElementById('statComments').textContent = s.comentarios    ?? '—';
+                document.getElementById('statDeleted').textContent  =
+                    ((s.publicacionesEliminadas || 0) + (s.comentariosEliminados || 0));
+            } catch {}
+        }
+
+        // --- Helpers ---
+        function timeAgo(dateStr) {
+            const diff = (Date.now() - new Date(dateStr)) / 1000;
+            if (diff < 60)    return 'Hace un momento';
+            if (diff < 3600)  return `Hace ${Math.floor(diff/60)} min`;
+            if (diff < 86400) return `Hace ${Math.floor(diff/3600)} h`;
+            return new Date(dateStr).toLocaleDateString('es-MX');
+        }
+
+        async function confirmarEliminar(msg, url) {
+            if (!confirm(msg)) return false;
+            const res = await fetch(url, { method: 'DELETE' });
+            return res.ok;
+        }
+
+        // --- Publicaciones ---
+        async function cargarPubs() {
+            const el = document.getElementById('listaPubs');
+            try {
+                const posts = await fetch(`${API}/api/posts`).then(r => r.json());
+                if (!posts.length) { el.innerHTML = '<p style="padding:1rem;color:#666;">No hay publicaciones activas.</p>'; return; }
+                el.innerHTML = posts.map(p => `
+                    <article class="content-item" data-id="${p.id_publicacion}">
+                        <div class="item-main">
+                            <img src="${p.imagen || 'https://via.placeholder.com/100'}" alt="${p.titulo}" class="item-img"
+                                 onerror="this.src='https://via.placeholder.com/100'">
+                            <div class="item-details">
+                                <h3>${p.titulo}</h3>
+                                <p>Por ${p.autor} • <span class="badge-cat">${p.categoria}</span> • ${timeAgo(p.fecha_creacion)}</p>
+                                <div class="item-actions">
+                                    <a href="../Post/Post.html?id=${p.id_publicacion}" class="action-btn"><i class="fas fa-eye"></i> Ver</a>
+                                    <button class="action-btn delete-btn" onclick="eliminarPost(${p.id_publicacion}, this)">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="status-approved">Aprobada</span>
+                    </article>`).join('');
+            } catch { el.innerHTML = '<p style="padding:1rem;color:#e74c3c;">Error al cargar publicaciones.</p>'; }
+        }
+
+        async function eliminarPost(id, btn) {
+            if (!confirm('¿Eliminar esta publicación?')) return;
+            btn.disabled = true;
+            const res = await fetch(`${API}/api/posts/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                btn.closest('.content-item').remove();
+                cargarStats();
+            } else { btn.disabled = false; alert('Error al eliminar.'); }
+        }
+
+        // --- Usuarios ---
+        async function cargarUsers() {
+            const el = document.getElementById('listaUsers');
+            try {
+                const users = await fetch(`${API}/api/users?estado=activo`).then(r => r.json());
+                if (!users.length) { el.innerHTML = '<p style="padding:1rem;color:#666;">No hay usuarios activos.</p>'; return; }
+                el.innerHTML = users.map(u => `
+                    <article class="content-item" data-id="${u.id_usuario}">
+                        <div class="item-main">
+                            <img src="https://via.placeholder.com/100" alt="${u.nombre}" class="item-img user-avatar">
+                            <div class="item-details">
+                                <h3>${u.nombre} <small style="color:#777;font-weight:400;">[${u.rol}]</small></h3>
+                                <p>${u.correo}</p>
+                                <div class="item-actions">
+                                    <button class="action-btn delete-btn" onclick="eliminarUser(${u.id_usuario}, this)">
+                                        <i class="fas fa-user-times"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>`).join('');
+            } catch { el.innerHTML = '<p style="padding:1rem;color:#e74c3c;">Error al cargar usuarios.</p>'; }
+        }
+
+        async function eliminarUser(id, btn) {
+            if (!confirm('¿Eliminar este usuario?')) return;
+            btn.disabled = true;
+            const res = await fetch(`${API}/api/users/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                btn.closest('.content-item').remove();
+                cargarStats();
+            } else { btn.disabled = false; alert('Error al eliminar.'); }
+        }
+
+        // --- Comentarios ---
+        async function cargarComments() {
+            const el = document.getElementById('listaComments');
+            try {
+                const comments = await fetch(`${API}/api/comments?estado=activo`).then(r => r.json());
+                if (!comments.length) { el.innerHTML = '<p style="padding:1rem;color:#666;">No hay comentarios activos.</p>'; return; }
+                el.innerHTML = comments.map(c => `
+                    <article class="content-item" data-id="${c.id_comentario}">
+                        <div class="item-main">
+                            <div class="item-details">
+                                <p><em>"${c.contenido}"</em></p>
+                                <p><small>En: <strong>${c.post_titulo}</strong> • Por: <strong>${c.autor}</strong> • ${timeAgo(c.fecha_creacion)}</small></p>
+                                <div class="item-actions">
+                                    <a href="../Post/Post.html?id=${c.id_publicacion}" class="action-btn"><i class="fas fa-eye"></i> Ver</a>
+                                    <button class="action-btn delete-btn" onclick="eliminarComentario(${c.id_comentario}, this)">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>`).join('');
+            } catch { el.innerHTML = '<p style="padding:1rem;color:#e74c3c;">Error al cargar comentarios.</p>'; }
+        }
+
+        async function eliminarComentario(id, btn) {
+            if (!confirm('¿Eliminar este comentario?')) return;
+            btn.disabled = true;
+            const res = await fetch(`${API}/api/comments/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                btn.closest('.content-item').remove();
+                cargarStats();
+            } else { btn.disabled = false; alert('Error al eliminar.'); }
+        }
+
+        // --- Categorías ---
+        async function cargarCats() {
+            const el = document.getElementById('listaCats');
+            try {
+                const cats = await fetch(`${API}/api/categorias`).then(r => r.json());
+                if (!cats.length) { el.innerHTML = '<p style="padding:1rem;color:#666;">No hay categorías registradas.</p>'; return; }
+                el.innerHTML = cats.map(c => `
+                    <article class="content-item" data-id="${c.id_categoria}">
+                        <div class="item-main">
+                            <div class="item-details">
+                                <h3><i class="fas fa-tag" style="color:var(--gold);margin-right:10px;"></i> ${c.nombre}</h3>
+                                <p>${c.num_publicaciones} publicaciones activas</p>
+                            </div>
+                        </div>
+                        <button class="action-btn delete-btn" onclick="eliminarCategoria(${c.id_categoria}, this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </article>`).join('');
+            } catch { el.innerHTML = '<p style="padding:1rem;color:#e74c3c;">Error al cargar categorías.</p>'; }
+        }
+
+        document.getElementById('btnCrearCategoria').addEventListener('click', async function() {
+            const nombre = document.getElementById('nuevaCategoria').value.trim();
+            if (!nombre) { alert('Escribe un nombre.'); return; }
+            this.disabled = true;
+            const res = await fetch(`${API}/api/categorias`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre })
+            });
+            if (res.ok) { document.getElementById('nuevaCategoria').value = ''; cargarCats(); }
+            else { alert('Error al crear categoría.'); }
+            this.disabled = false;
+        });
+
+        async function eliminarCategoria(id, btn) {
+            if (!confirm('¿Eliminar esta categoría?')) return;
+            btn.disabled = true;
+            const res = await fetch(`${API}/api/categorias/${id}`, { method: 'DELETE' });
+            if (res.ok) btn.closest('.content-item').remove();
+            else { btn.disabled = false; alert('Error al eliminar.'); }
+        }
+
+        // --- Tabs ---
+        const tabBtns     = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+
+        const cargadores = {
+            publicaciones: cargarPubs,
+            usuarios:      cargarUsers,
+            comentarios:   cargarComments,
+            categorias:    cargarCats
+        };
 
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Remover clase active de todos
                 tabBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
-
-                // Activar el seleccionado
                 btn.classList.add('active');
-                const targetId = btn.getAttribute('data-tab');
-                document.getElementById(targetId).classList.add('active');
+                const id = btn.getAttribute('data-tab');
+                document.getElementById(id).classList.add('active');
+                if (cargadores[id]) cargadores[id]();
             });
         });
 
-        // Simulación de eliminación (Delegación de eventos)
-        document.querySelector('.content-list').addEventListener('click', function(e) {
-            if (e.target.closest('.delete-btn')) {
-                if(confirm('¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.')) {
-                    e.target.closest('.content-item').remove();
-                }
-            }
-        });
+        // --- Carga inicial ---
+        cargarStats();
+        cargarPubs();
     </script>
 </body>
 </html>
