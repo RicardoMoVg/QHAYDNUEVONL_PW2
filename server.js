@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const sql = require('mssql');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const { Sequelize, DataTypes, Op } = require('sequelize');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,652 +11,315 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-const dbConfig = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    server: process.env.DB_SERVER || 'localhost',
-    database: process.env.DB_DATABASE,
-    port: 63256, // Puerto TCP dinámico capturado de la instancia SQL Server
-    options: {
-        encrypt: false, // Cambiado a false para entorno local
-        trustServerCertificate: true
-    }
-};
+// ════════════════════════════════════════════════════════════════
+// 1. CONEXIÓN AL ORM (Sequelize)
+// ════════════════════════════════════════════════════════════════
+const sequelize = new Sequelize(process.env.DB_DATABASE, process.env.DB_USER, process.env.DB_PASSWORD, {
+    host: process.env.DB_SERVER || 'localhost',
+    dialect: 'mssql',
+    port: 63256,
+    dialectOptions: { options: { encrypt: false, trustServerCertificate: true } },
+    logging: false // Evita que la terminal se llene de texto SQL
+});
 
-// Creamos un pool de conexión global
-const poolPromise = new sql.ConnectionPool(dbConfig)
-    .connect()
-    .then(pool => {
-        console.log('✅ Conectado a SQL Server (db_PW2)');
-        return pool;
-    })
+sequelize.authenticate()
+    .then(() => console.log('✅ Conectado a SQL Server vía Sequelize (db_PW2)'))
     .catch(err => {
-        console.error('❌ Error al crear el pool de conexión:', err);
-        process.exit(1); // Detiene la app si no hay base de datos
+        console.error('❌ Error al conectar con Sequelize:', err);
+        process.exit(1);
     });
 
-app.get('/', (req, res) => {
-    res.send('API de ¿Qué hay de nuevo, Nuevo León? funcionando correctamente.');
-});
+// ════════════════════════════════════════════════════════════════
+// 2. MODELOS Y RELACIONES
+// ════════════════════════════════════════════════════════════════
+const Usuario = sequelize.define('Usuario', {
+    id_usuario: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    correo: { type: DataTypes.STRING, allowNull: false },
+    contraseña: { type: DataTypes.STRING, allowNull: false },
+    edad: { type: DataTypes.STRING },
+    rol: { type: DataTypes.STRING, defaultValue: 'usuario' },
+    estado: { type: DataTypes.STRING, defaultValue: 'activo' },
+    descripcion: { type: DataTypes.STRING(500) },
+    foto_perfil: { type: DataTypes.TEXT },
+    foto_portada: { type: DataTypes.TEXT },
+    id_moderador: { type: DataTypes.INTEGER },
+    fecha_moderacion: { type: DataTypes.DATE }
+}, { tableName: 'Usuarios', timestamps: false });
 
-// ───────────────────────────────────────────────
-// POST /api/auth/register  — Registrar usuario
-// Espera: { nombre, edad, correo, password }
-// ───────────────────────────────────────────────
+const Categoria = sequelize.define('Categoria', {
+    id_categoria: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    nombre_categoria: { type: DataTypes.STRING, allowNull: false }
+}, { tableName: 'Categorias', timestamps: false });
+
+const Publicacion = sequelize.define('Publicacion', {
+    id_publicacion: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    titulo: { type: DataTypes.STRING, allowNull: false },
+    descripcion: { type: DataTypes.STRING, allowNull: false },
+    ubicacion: { type: DataTypes.STRING },
+    imagen: { type: DataTypes.TEXT },
+    likes: { type: DataTypes.INTEGER, defaultValue: 0 },
+    estado: { type: DataTypes.STRING, defaultValue: 'activo' },
+    fecha_creacion: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+    id_usuario: { type: DataTypes.INTEGER },
+    id_categoria: { type: DataTypes.INTEGER },
+    id_moderador: { type: DataTypes.INTEGER },
+    fecha_moderacion: { type: DataTypes.DATE }
+}, { tableName: 'Publicaciones', timestamps: false });
+
+const Comentario = sequelize.define('Comentario', {
+    id_comentario: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    contenido: { type: DataTypes.STRING, allowNull: false },
+    likes: { type: DataTypes.INTEGER, defaultValue: 0 },
+    estado: { type: DataTypes.STRING, defaultValue: 'activo' },
+    fecha_comentario: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+    id_publicacion: { type: DataTypes.INTEGER },
+    id_usuario: { type: DataTypes.INTEGER },
+    id_moderador: { type: DataTypes.INTEGER },
+    fecha_moderacion: { type: DataTypes.DATE }
+}, { tableName: 'Comentarios', timestamps: false });
+
+// -- Relaciones --
+Usuario.hasMany(Publicacion, { foreignKey: 'id_usuario' });
+Publicacion.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'autor' });
+Publicacion.belongsTo(Usuario, { foreignKey: 'id_moderador', as: 'modPost' });
+
+Categoria.hasMany(Publicacion, { foreignKey: 'id_categoria' });
+Publicacion.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'categoriaData' });
+
+Usuario.hasMany(Comentario, { foreignKey: 'id_usuario' });
+Comentario.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'autor' });
+Comentario.belongsTo(Usuario, { foreignKey: 'id_moderador', as: 'modCom' });
+
+Publicacion.hasMany(Comentario, { foreignKey: 'id_publicacion', as: 'comentariosList' });
+Comentario.belongsTo(Publicacion, { foreignKey: 'id_publicacion', as: 'postData' });
+
+Usuario.belongsTo(Usuario, { foreignKey: 'id_moderador', as: 'modUser' });
+
+// ════════════════════════════════════════════════════════════════
+// 3. RUTAS DE LA API
+// ════════════════════════════════════════════════════════════════
+
+app.get('/', (req, res) => res.send('API funcionando con Sequelize ORM.'));
+app.get('/api/test-db', async (req, res) => res.json([{ Mensaje: 'Conexión a db_PW2 exitosa' }]));
+
+// ── AUTH ──
 app.post('/api/auth/register', async (req, res) => {
     const { nombre, edad, correo, password } = req.body;
-
-    if (!nombre || !edad || !correo || !password) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
-    }
-    if (password.length < 6) {
-        return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
-    }
-
+    if (!nombre || !edad || !correo || !password) return res.status(400).json({ error: 'Faltan campos.' });
     try {
-        const pool = await poolPromise;
-
-        // Verificar si el correo ya existe
-        const existing = await pool.request()
-            .input('correo', sql.NVarChar, correo)
-            .query('SELECT id_usuario FROM Usuarios WHERE correo = @correo');
-
-        if (existing.recordset.length > 0) {
-            return res.status(409).json({ error: 'El correo ya está registrado.' });
-        }
-
+        const existe = await Usuario.findOne({ where: { correo } });
+        if (existe) return res.status(409).json({ error: 'Correo registrado.' });
         const hash = await bcrypt.hash(password, 10);
-
-        await pool.request()
-            .input('nombre', sql.NVarChar, nombre)
-            .input('edad', sql.NVarChar, String(edad))
-            .input('correo', sql.NVarChar, correo)
-            .input('contrasena', sql.NVarChar, hash)
-            .query(`INSERT INTO Usuarios (nombre, edad, correo, contraseña, rol, estado)
-                    VALUES (@nombre, @edad, @correo, @contrasena, 'usuario', 'activo')`);
-
-        res.status(201).json({ mensaje: 'Usuario registrado correctamente.' });
-    } catch (err) {
-        console.error('Error en /register:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        await Usuario.create({ nombre, edad: String(edad), correo, contraseña: hash });
+        res.status(201).json({ mensaje: 'Usuario registrado.' });
+    } catch (err) { res.status(500).json({ error: 'Error interno.' }); }
 });
 
-// ───────────────────────────────────────────────
-// POST /api/auth/login  — Iniciar sesión
-// Espera: { correo, password }
-// ───────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
     const { correo, password } = req.body;
-
-    if (!correo || !password) {
-        return res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
-    }
-
     try {
-        const pool = await poolPromise;
-
-        const result = await pool.request()
-            .input('correo', sql.NVarChar, correo)
-            .query(`SELECT id_usuario, nombre, correo, contraseña, rol, estado
-                    FROM Usuarios WHERE correo = @correo`);
-
-        if (result.recordset.length === 0) {
-            return res.status(401).json({ error: 'Credenciales incorrectas.' });
-        }
-
-        const usuario = result.recordset[0];
-
-        if (usuario.estado !== 'activo') {
-            return res.status(403).json({ error: 'Tu cuenta está desactivada.' });
-        }
-
-        const passwordValida = await bcrypt.compare(password, usuario.contraseña);
-
-        if (!passwordValida) {
-            return res.status(401).json({ error: 'Credenciales incorrectas.' });
-        }
-
-        // Devolvemos datos básicos del usuario (sin la contraseña)
-        res.json({
-            mensaje: 'Inicio de sesión exitoso.',
-            usuario: {
-                id: usuario.id_usuario,
-                nombre: usuario.nombre,
-                correo: usuario.correo,
-                rol: usuario.rol,
-                estado: usuario.estado
-            }
-        });
-    } catch (err) {
-        console.error('Error en /login:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const user = await Usuario.findOne({ where: { correo } });
+        if (!user || user.estado !== 'activo') return res.status(401).json({ error: 'Credenciales inválidas.' });
+        const valid = await bcrypt.compare(password, user.contraseña);
+        if (!valid) return res.status(401).json({ error: 'Credenciales incorrectas.' });
+        res.json({ mensaje: 'Éxito.', usuario: { id: user.id_usuario, nombre: user.nombre, correo: user.correo, rol: user.rol, estado: user.estado } });
+    } catch (err) { res.status(500).json({ error: 'Error interno.' }); }
 });
 
-app.get('/api/test-db', async (req, res) => {
-    try {
-        const pool = await poolPromise; // Usamos el pool ya conectado
-        const result = await pool.request().query('SELECT \'Conexión a db_PW2 exitosa\' as Mensaje');
-        res.json(result.recordset);
-    } catch (err) {
-        res.status(500).json({ error: 'Error en la consulta', detalles: err.message });
-    }
-});
-
-// ─────────────────────────────────────────────
-// GET /api/stats
-// ─────────────────────────────────────────────
+// ── ESTADÍSTICAS ──
 app.get('/api/stats', async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const r = await pool.request().query(`
-            SELECT
-                (SELECT COUNT(*) FROM Publicaciones WHERE estado='activo')    AS publicaciones,
-                (SELECT COUNT(*) FROM Publicaciones WHERE estado='eliminado') AS publicacionesEliminadas,
-                (SELECT COUNT(*) FROM Usuarios      WHERE estado='activo')    AS usuarios,
-                (SELECT COUNT(*) FROM Usuarios      WHERE estado='eliminado') AS usuariosEliminados,
-                (SELECT COUNT(*) FROM Comentarios   WHERE estado='activo')    AS comentarios,
-                (SELECT COUNT(*) FROM Comentarios   WHERE estado='eliminado') AS comentariosEliminados
-        `);
-        res.json(r.recordset[0]);
-    } catch (err) {
-        console.error('Error en /api/stats:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const [pubs, pubsDel, users, usersDel, comms, commsDel] = await Promise.all([
+            Publicacion.count({ where: { estado: 'activo' } }),
+            Publicacion.count({ where: { estado: 'eliminado' } }),
+            Usuario.count({ where: { estado: 'activo' } }),
+            Usuario.count({ where: { estado: 'eliminado' } }),
+            Comentario.count({ where: { estado: 'activo' } }),
+            Comentario.count({ where: { estado: 'eliminado' } })
+        ]);
+        res.json({ publicaciones: pubs, publicacionesEliminadas: pubsDel, usuarios: users, usuariosEliminados: usersDel, comentarios: comms, comentariosEliminados: commsDel });
+    } catch (err) { res.status(500).json({ error: 'Error interno.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/posts   — ?categoria=X & busqueda=Y
-// ─────────────────────────────────────────────
+// ── PUBLICACIONES ──
 app.get('/api/posts', async (req, res) => {
-    const { categoria, estado, busqueda } = req.query; // Capturamos el nuevo parámetro
-
+    const { categoria, estado, busqueda } = req.query;
     try {
-        const pool = await poolPromise;
-        const request = pool.request();
-        const estadoFiltro = estado || 'activo';
+        const whereClause = { estado: estado && estado !== 'todos' ? estado : 'activo' };
+        if (busqueda) whereClause.titulo = busqueda;
 
-        request.input('estado', sql.NVarChar, estadoFiltro);
+        const includes = [
+            { model: Usuario, as: 'autor', attributes: ['id_usuario', 'nombre'] },
+            { model: Usuario, as: 'modPost', attributes: ['nombre'] },
+            { model: Comentario, as: 'comentariosList', where: { estado: 'activo' }, required: false }
+        ];
 
-        let query = `
-            SELECT p.id_publicacion, p.titulo, p.descripcion, p.imagen, p.estado,
-                   cat.nombre_categoria AS categoria, p.ubicacion, p.likes, p.fecha_creacion,
-                   u.nombre AS autor, u.id_usuario, m.nombre AS moderador,
-                   (SELECT COUNT(*) FROM Comentarios c
-                    WHERE c.id_publicacion = p.id_publicacion AND c.estado='activo') AS num_comentarios
-            FROM Publicaciones p
-            JOIN Usuarios u ON p.id_usuario = u.id_usuario
-            LEFT JOIN Categorias cat ON p.id_categoria = cat.id_categoria
-            LEFT JOIN Usuarios m ON p.id_moderador = m.id_usuario
-            WHERE 1=1
-        `;
+        if (categoria && categoria !== 'Todos') includes.push({ model: Categoria, as: 'categoriaData', where: { nombre_categoria: categoria } });
+        else includes.push({ model: Categoria, as: 'categoriaData' });
 
-        if (estado && estado !== 'todos') {
-            query += ' AND p.estado = @estado';
-            request.input('estado', sql.NVarChar, estado);
-        } else if (!estado) {
-            query += ' AND p.estado = \'activo\'';
-        }
+        const postsRaw = await Publicacion.findAll({ where: whereClause, include: includes, order: [['fecha_creacion', 'DESC']] });
 
-        // Filtro por categoría
-        if (categoria && categoria !== 'Todos') {
-            query += ' AND cat.nombre_categoria = @categoria';
-            request.input('categoria', sql.NVarChar, categoria);
-        }
-
-        if (busqueda) {
-            query += ' AND p.titulo = @busqueda';
-            request.input('busqueda', sql.NVarChar, busqueda);
-        }
-
-        query += ' ORDER BY p.fecha_creacion DESC';
-        const result = await request.query(query);
-
-        const posts = result.recordset.map(row => {
-            let primeraImagen = null;
-            if (row.imagen) {
-                try {
-                    const arr = JSON.parse(row.imagen);
-                    primeraImagen = Array.isArray(arr) && arr.length ? arr[0] : row.imagen;
-                } catch {
-                    primeraImagen = row.imagen;
-                }
-            }
-            return { ...row, imagen: primeraImagen };
+        const posts = postsRaw.map(p => {
+            const data = p.toJSON();
+            let img = data.imagen;
+            if (img) { try { const arr = JSON.parse(img); img = Array.isArray(arr) ? arr[0] : img; } catch { } }
+            return { ...data, autor: data.autor?.nombre, moderador: data.modPost?.nombre, categoria: data.categoriaData?.nombre_categoria, num_comentarios: data.comentariosList?.length || 0, imagen: img };
         });
-
         res.json(posts);
-    } catch (err) {
-        console.error('Error en GET /api/posts:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/posts/:id
-// ─────────────────────────────────────────────
 app.get('/api/posts/:id', async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .query(`
-                SELECT p.id_publicacion, p.titulo, p.descripcion, p.imagen,
-                       cat.nombre_categoria AS categoria, p.ubicacion, p.likes, p.fecha_creacion,
-                       u.nombre AS autor, u.id_usuario,
-                       (SELECT COUNT(*) FROM Comentarios c
-                        WHERE c.id_publicacion = p.id_publicacion AND c.estado='activo') AS num_comentarios
-                FROM Publicaciones p
-                JOIN Usuarios u ON p.id_usuario = u.id_usuario
-                LEFT JOIN Categorias cat ON p.id_categoria = cat.id_categoria
-                WHERE p.id_publicacion = @id AND p.estado = 'activo'
-            `);
-        if (!result.recordset.length)
-            return res.status(404).json({ error: 'Publicación no encontrada.' });
-        res.json(result.recordset[0]);
-    } catch (err) {
-        console.error('Error en GET /api/posts/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const p = await Publicacion.findOne({
+            where: { id_publicacion: req.params.id, estado: 'activo' },
+            include: [{ model: Usuario, as: 'autor' }, { model: Categoria, as: 'categoriaData' }, { model: Comentario, as: 'comentariosList', where: { estado: 'activo' }, required: false }]
+        });
+        if (!p) return res.status(404).json({ error: 'No encontrada.' });
+        const data = p.toJSON();
+        res.json({ ...data, autor: data.autor?.nombre, categoria: data.categoriaData?.nombre_categoria, num_comentarios: data.comentariosList?.length || 0 });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/posts
-// Espera: { titulo, descripcion, categoria, ubicacion, id_usuario }
-// ─────────────────────────────────────────────
 app.post('/api/posts', async (req, res) => {
     const { titulo, descripcion, categoria, ubicacion, id_usuario, imagen } = req.body;
-    if (!titulo || !descripcion || !categoria || !id_usuario)
-        return res.status(400).json({ error: 'Título, descripción, categoría y usuario son obligatorios.' });
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('titulo', sql.NVarChar, titulo)
-            .input('descripcion', sql.NVarChar, descripcion)
-            .input('categoria', sql.NVarChar, categoria)
-            .input('ubicacion', sql.NVarChar, ubicacion || null)
-            .input('id_usuario', sql.Int, id_usuario)
-            .input('imagen', sql.NVarChar(sql.MAX), imagen || null)
-            .query(`
-                INSERT INTO Publicaciones
-                    (titulo, descripcion, id_categoria, ubicacion, id_usuario, imagen, likes, estado, fecha_creacion, fecha_publicacion)
-                OUTPUT INSERTED.id_publicacion
-                SELECT @titulo, @descripcion, id_categoria, @ubicacion, @id_usuario, @imagen, 0, 'activo', GETDATE(), GETDATE()
-                FROM Categorias WHERE nombre_categoria = @categoria
-            `);
-        if (!result.recordset.length)
-            return res.status(400).json({ error: `La categoría "${categoria}" no existe en el catálogo.` });
-        res.status(201).json({ mensaje: 'Publicación creada.', id: result.recordset[0].id_publicacion });
-    } catch (err) {
-        console.error('Error en POST /api/posts:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const cat = await Categoria.findOne({ where: { nombre_categoria: categoria } });
+        if (!cat) return res.status(400).json({ error: 'Categoría no existe.' });
+        const post = await Publicacion.create({ titulo, descripcion, ubicacion, imagen, id_usuario, id_categoria: cat.id_categoria });
+        res.status(201).json({ mensaje: 'Publicación creada.', id: post.id_publicacion });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/posts/:id/like  — incrementar likes
-// ─────────────────────────────────────────────
 app.post('/api/posts/:id/like', async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido.' });
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query(`
-                UPDATE Publicaciones SET likes = ISNULL(likes, 0) + 1
-                OUTPUT INSERTED.likes
-                WHERE id_publicacion = @id AND estado = 'activo'
-            `);
-        if (!result.recordset.length)
-            return res.status(404).json({ error: 'Publicación no encontrada.' });
-        res.json({ likes: result.recordset[0].likes });
-    } catch (err) {
-        console.error('Error en POST /api/posts/:id/like:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const p = await Publicacion.findOne({ where: { id_publicacion: req.params.id, estado: 'activo' } });
+        if (!p) return res.status(404).json({ error: 'No existe.' });
+        p.likes += 1; await p.save();
+        res.json({ likes: p.likes });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// DELETE /api/posts/:id  — soft delete
-// ─────────────────────────────────────────────
 app.delete('/api/posts/:id', async (req, res) => {
-    const { id_moderador } = req.body;
     try {
-        const pool = await poolPromise;
-        await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .input('mod', sql.Int, id_moderador || null)
-            .query(`UPDATE Publicaciones SET estado='eliminado', id_moderador=@mod, fecha_moderacion=GETDATE() WHERE id_publicacion=@id`);
-        res.json({ mensaje: 'Publicación eliminada.' });
-    } catch (err) {
-        console.error('Error en DELETE /api/posts/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        await Publicacion.update({ estado: 'eliminado', id_moderador: req.body.id_moderador || null, fecha_moderacion: new Date() }, { where: { id_publicacion: req.params.id } });
+        res.json({ mensaje: 'Eliminada.' });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/posts/:id/comments
-// ─────────────────────────────────────────────
+// ── COMENTARIOS ──
 app.get('/api/posts/:id/comments', async (req, res) => {
-    const postId = parseInt(req.params.id);
-    if (isNaN(postId)) return res.status(400).json({ error: 'ID de publicación inválido.' });
-
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('id', sql.Int, postId)
-            .query(`
-                SELECT c.id_comentario, c.contenido, c.likes, c.fecha_comentario,
-                       u.nombre AS autor, u.id_usuario
-                FROM Comentarios c
-                JOIN Usuarios u ON c.id_usuario = u.id_usuario
-                WHERE c.id_publicacion = @id AND c.estado = 'activo'
-                ORDER BY c.fecha_comentario ASC
-            `);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error('Error en GET /api/posts/:id/comments:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const comms = await Comentario.findAll({ where: { id_publicacion: req.params.id, estado: 'activo' }, include: [{ model: Usuario, as: 'autor' }], order: [['fecha_comentario', 'ASC']] });
+        res.json(comms.map(c => ({ ...c.toJSON(), autor: c.autor?.nombre })));
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/posts/:id/comments
-// Espera: { contenido, id_usuario }
-// ─────────────────────────────────────────────
 app.post('/api/posts/:id/comments', async (req, res) => {
-    const { contenido, id_usuario } = req.body;
-    const postId = parseInt(req.params.id);
-
-    if (!contenido || !id_usuario || isNaN(postId))
-        return res.status(400).json({ error: 'Contenido, usuario y ID de publicación son obligatorios.' });
-
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('contenido', sql.NVarChar, contenido)
-            .input('id_publicacion', sql.Int, postId)
-            .input('id_usuario', sql.Int, parseInt(id_usuario))
-            .query(`
-                INSERT INTO Comentarios
-                    (contenido, id_publicacion, id_usuario, likes, estado, fecha_comentario)
-                OUTPUT INSERTED.id_comentario
-                VALUES (@contenido, @id_publicacion, @id_usuario, 0, 'activo', GETDATE())
-            `);
-        res.status(201).json({
-            mensaje: 'Comentario publicado.',
-            id: result.recordset[0].id_comentario
-        });
-    } catch (err) {
-        console.error('Error en POST /api/posts/:id/comments:', err);
-        res.status(500).json({ error: 'Error al guardar el comentario.', detalle: err.message });
-    }
+        const c = await Comentario.create({ contenido: req.body.contenido, id_publicacion: req.params.id, id_usuario: req.body.id_usuario });
+        res.status(201).json({ mensaje: 'Comentario publicado.', id: c.id_comentario });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/comments  — todos los comentarios (moderación)
-// Query: ?estado=activo|eliminado
-// ─────────────────────────────────────────────
 app.get('/api/comments', async (req, res) => {
     const { estado } = req.query;
     try {
-        const pool = await poolPromise;
-        const request = pool.request();
-        let query = `
-            SELECT c.id_comentario, c.contenido, c.likes, c.fecha_comentario, c.estado,
-                   u.nombre AS autor, p.titulo AS post_titulo, p.id_publicacion,
-                   m.nombre AS moderador
-            FROM Comentarios c
-            JOIN Usuarios u ON c.id_usuario = u.id_usuario
-            JOIN Publicaciones p ON c.id_publicacion = p.id_publicacion
-            LEFT JOIN Usuarios m ON c.id_moderador = m.id_usuario
-            WHERE 1=1
-        `;
-        if (estado && estado !== 'todos') {
-            query += ' AND c.estado = @estado';
-            request.input('estado', sql.NVarChar, estado);
-        }
-        query += ' ORDER BY c.fecha_comentario DESC';
-        const result = await request.query(query);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error('Error en GET /api/comments:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const comms = await Comentario.findAll({
+            where: estado && estado !== 'todos' ? { estado } : {},
+            include: [{ model: Usuario, as: 'autor' }, { model: Usuario, as: 'modCom' }, { model: Publicacion, as: 'postData' }],
+            order: [['fecha_comentario', 'DESC']]
+        });
+        res.json(comms.map(c => ({ ...c.toJSON(), autor: c.autor?.nombre, moderador: c.modCom?.nombre, post_titulo: c.postData?.titulo })));
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/comments/:id/like  — incrementar likes
-// ─────────────────────────────────────────────
 app.post('/api/comments/:id/like', async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido.' });
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query(`
-                UPDATE Comentarios SET likes = ISNULL(likes, 0) + 1
-                OUTPUT INSERTED.likes
-                WHERE id_comentario = @id AND estado = 'activo'
-            `);
-        if (!result.recordset.length)
-            return res.status(404).json({ error: 'Comentario no encontrado.' });
-        res.json({ likes: result.recordset[0].likes });
-    } catch (err) {
-        console.error('Error en POST /api/comments/:id/like:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const c = await Comentario.findOne({ where: { id_comentario: req.params.id, estado: 'activo' } });
+        c.likes += 1; await c.save();
+        res.json({ likes: c.likes });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// DELETE /api/comments/:id
-// ─────────────────────────────────────────────
 app.delete('/api/comments/:id', async (req, res) => {
-    const { id_moderador } = req.body;
     try {
-        const pool = await poolPromise;
-        await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .input('mod', sql.Int, id_moderador || null)
-            .query(`UPDATE Comentarios SET estado='eliminado', id_moderador=@mod, fecha_moderacion=GETDATE() WHERE id_comentario=@id`);
+        await Comentario.update({ estado: 'eliminado', id_moderador: req.body.id_moderador || null, fecha_moderacion: new Date() }, { where: { id_comentario: req.params.id } });
         res.json({ mensaje: 'Comentario eliminado.' });
-    } catch (err) {
-        console.error('Error en DELETE /api/comments/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/users   — ?estado=activo|eliminado
-// ─────────────────────────────────────────────
+// ── USUARIOS Y PERFILES ──
 app.get('/api/users', async (req, res) => {
     const { estado } = req.query;
     try {
-        const pool = await poolPromise;
-        const request = pool.request();
-        let query = `
-            SELECT u.id_usuario, u.nombre, u.correo, u.rol, u.estado, u.edad,
-                   m.nombre AS moderador
-            FROM Usuarios u
-            LEFT JOIN Usuarios m ON u.id_moderador = m.id_usuario
-            WHERE 1=1
-        `;
-        if (estado && estado !== 'todos') {
-            query += ' AND u.estado = @estado';
-            request.input('estado', sql.NVarChar, estado);
-        }
-        query += ' ORDER BY id_usuario DESC';
-        const result = await request.query(query);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error('Error en GET /api/users:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const users = await Usuario.findAll({
+            where: estado && estado !== 'todos' ? { estado } : {},
+            include: [{ model: Usuario, as: 'modUser', attributes: ['nombre'] }],
+            order: [['id_usuario', 'DESC']]
+        });
+        res.json(users.map(u => ({ ...u.toJSON(), moderador: u.modUser?.nombre })));
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/users/:id
-// ─────────────────────────────────────────────
 app.get('/api/users/:id', async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .query(`
-                SELECT u.id_usuario, u.nombre, u.correo, u.rol, u.estado, u.edad,
-                       u.descripcion, u.foto_perfil, u.foto_portada,
-                       (SELECT COUNT(*) FROM Publicaciones p
-                        WHERE p.id_usuario = u.id_usuario AND p.estado='activo') AS num_publicaciones,
-                       (SELECT ISNULL(SUM(p.likes),0) FROM Publicaciones p
-                        WHERE p.id_usuario = u.id_usuario AND p.estado='activo') AS total_likes
-                FROM Usuarios u WHERE u.id_usuario = @id
-            `);
-        if (!result.recordset.length)
-            return res.status(404).json({ error: 'Usuario no encontrado.' });
-        res.json(result.recordset[0]);
-    } catch (err) {
-        console.error('Error en GET /api/users/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const u = await Usuario.findByPk(req.params.id);
+        if (!u) return res.status(404).json({ error: 'No encontrado.' });
+        const num_pubs = await Publicacion.count({ where: { id_usuario: req.params.id, estado: 'activo' } });
+        const total_likes = await Publicacion.sum('likes', { where: { id_usuario: req.params.id, estado: 'activo' } }) || 0;
+        res.json({ ...u.toJSON(), num_publicaciones: num_pubs, total_likes });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// PUT /api/users/:id  — actualizar perfil
-// ─────────────────────────────────────────────
 app.put('/api/users/:id', async (req, res) => {
-    const { nombre, descripcion, foto_perfil, foto_portada } = req.body;
-    if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio.' });
     try {
-        const pool = await poolPromise;
-        await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .input('nombre', sql.NVarChar, nombre)
-            .input('descripcion', sql.NVarChar(500), descripcion || null)
-            .input('foto_perfil', sql.NVarChar(sql.MAX), foto_perfil || null)
-            .input('foto_portada', sql.NVarChar(sql.MAX), foto_portada || null)
-            .query(`
-                UPDATE Usuarios SET
-                    nombre       = @nombre,
-                    descripcion  = @descripcion,
-                    foto_perfil  = CASE WHEN @foto_perfil  IS NOT NULL THEN @foto_perfil  ELSE foto_perfil  END,
-                    foto_portada = CASE WHEN @foto_portada IS NOT NULL THEN @foto_portada ELSE foto_portada END
-                WHERE id_usuario = @id`);
-        res.json({ mensaje: 'Perfil actualizado correctamente.' });
-    } catch (err) {
-        console.error('Error en PUT /api/users/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const { nombre, descripcion, foto_perfil, foto_portada } = req.body;
+        const u = await Usuario.findByPk(req.params.id);
+        await u.update({ nombre, descripcion, foto_perfil: foto_perfil || u.foto_perfil, foto_portada: foto_portada || u.foto_portada });
+        res.json({ mensaje: 'Perfil actualizado.' });
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/users/:id/posts  — publicaciones del usuario
-// ─────────────────────────────────────────────
 app.get('/api/users/:id/posts', async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .query(`
-                SELECT p.id_publicacion, p.titulo, p.descripcion, p.imagen,
-                       cat.nombre_categoria AS categoria, p.ubicacion,
-                       p.likes, p.fecha_creacion,
-                       (SELECT COUNT(*) FROM Comentarios c
-                        WHERE c.id_publicacion = p.id_publicacion AND c.estado='activo') AS num_comentarios
-                FROM Publicaciones p
-                LEFT JOIN Categorias cat ON p.id_categoria = cat.id_categoria
-                WHERE p.id_usuario = @id AND p.estado = 'activo'
-                ORDER BY p.fecha_creacion DESC
-            `);
-        const posts = result.recordset.map(row => {
-            let img = null;
-            if (row.imagen) {
-                try { const a = JSON.parse(row.imagen); img = Array.isArray(a) && a.length ? a[0] : row.imagen; }
-                catch { img = row.imagen; }
-            }
-            return { ...row, imagen: img };
+        const posts = await Publicacion.findAll({
+            where: { id_usuario: req.params.id, estado: 'activo' },
+            include: [{ model: Categoria, as: 'categoriaData' }, { model: Comentario, as: 'comentariosList', where: { estado: 'activo' }, required: false }],
+            order: [['fecha_creacion', 'DESC']]
         });
-        res.json(posts);
-    } catch (err) {
-        console.error('Error en GET /api/users/:id/posts:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        res.json(posts.map(p => ({ ...p.toJSON(), categoria: p.categoriaData?.nombre_categoria, num_comentarios: p.comentariosList?.length || 0 })));
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-
-// ─────────────────────────────────────────────
-// DELETE /api/users/:id  — desactivar usuario
-// ─────────────────────────────────────────────
 app.delete('/api/users/:id', async (req, res) => {
-    const { id_moderador } = req.body;
     try {
-        const pool = await poolPromise;
-        await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .input('mod', sql.Int, id_moderador || null)
-            .query(`UPDATE Usuarios SET estado='eliminado', id_moderador=@mod, fecha_moderacion=GETDATE() WHERE id_usuario=@id`);
+        await Usuario.update({ estado: 'eliminado', id_moderador: req.body.id_moderador || null, fecha_moderacion: new Date() }, { where: { id_usuario: req.params.id } });
         res.json({ mensaje: 'Usuario eliminado.' });
-    } catch (err) {
-        console.error('Error en DELETE /api/users/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/categorias
-// ─────────────────────────────────────────────
+// ── CATEGORÍAS ──
 app.get('/api/categorias', async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const result = await pool.request().query(`
-            SELECT c.id_categoria, c.nombre_categoria AS nombre,
-                   (SELECT COUNT(*) FROM Publicaciones p
-                    WHERE p.id_categoria = c.id_categoria AND p.estado='activo') AS num_publicaciones
-            FROM Categorias c ORDER BY c.nombre_categoria
-        `);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error('Error en GET /api/categorias:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+        const cats = await Categoria.findAll({ order: [['nombre_categoria', 'ASC']] });
+        const result = await Promise.all(cats.map(async c => {
+            const num = await Publicacion.count({ where: { id_categoria: c.id_categoria, estado: 'activo' } });
+            return { id_categoria: c.id_categoria, nombre: c.nombre_categoria, num_publicaciones: num };
+        }));
+        res.json(result);
+    } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/categorias  — { nombre }
-// ─────────────────────────────────────────────
 app.post('/api/categorias', async (req, res) => {
-    const { nombre } = req.body;
-    if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio.' });
-    try {
-        const pool = await poolPromise;
-        await pool.request()
-            .input('nombre', sql.NVarChar, nombre)
-            .query(`INSERT INTO Categorias (nombre_categoria) VALUES (@nombre)`);
-        res.status(201).json({ mensaje: 'Categoría creada.' });
-    } catch (err) {
-        console.error('Error en POST /api/categorias:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+    try { await Categoria.create({ nombre_categoria: req.body.nombre }); res.status(201).json({ mensaje: 'Creada.' }); }
+    catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ─────────────────────────────────────────────
-// DELETE /api/categorias/:id
-// ─────────────────────────────────────────────
 app.delete('/api/categorias/:id', async (req, res) => {
-    try {
-        const pool = await poolPromise;
-        await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .query(`DELETE FROM Categorias WHERE id_categoria=@id`);
-        res.json({ mensaje: 'Categoría eliminada.' });
-    } catch (err) {
-        console.error('Error en DELETE /api/categorias/:id:', err);
-        res.status(500).json({ error: 'Error interno del servidor.' });
-    }
+    try { await Categoria.destroy({ where: { id_categoria: req.params.id } }); res.json({ mensaje: 'Eliminada.' }); }
+    catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-app.listen(port, () => {
-    console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`🚀 Servidor ORM escuchando en http://localhost:${port}`));
