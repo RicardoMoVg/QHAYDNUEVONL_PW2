@@ -2,319 +2,362 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>¿Qué hay de nuevo, Nuevo León?</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>¿Qué hay de nuevo, Nuevo León?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
-  <header class="main-header">
-    <div class="header-container">
-      <div class="logo-area">
-        <img src="Recursos/logo.png" alt="Logo UANL" class="logo-img" />
-      </div>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <img src="Recursos/logo.png" alt="Logo UANL" class="logo-img" />
+            </div>
 
-      <div class="search-area">
-        <input type="text" id="searchInput" placeholder="Buscar publicaciones..." />
-      </div>
+            <div class="search-area">
+                <input type="text" id="searchInput" placeholder="Buscar publicaciones..." />
+            </div>
 
-      <nav class="nav-links">
-        <a href="index.html" class="active"><i class="fas fa-home"></i> Inicio</a>
-        <a href="#" id="openCreatePostModal"><i class="fas fa-plus"></i> Publicar</a>
-        <a href="Perfil/Perfil.html" class="profile-btn"><i class="fas fa-user"></i> <span id="navNombre">Perfil</span></a>
-        <a href="Login/login.html" id="btnCerrarSesion"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-      </nav>
+            <nav class="nav-links">
+                <a href="index.html" class="active"><i class="fas fa-home"></i> Inicio</a>
+                <a href="#" id="openCreatePostModal"><i class="fas fa-plus"></i> Publicar</a>
+                <a href="Perfil/Perfil.html" class="profile-btn"><i class="fas fa-user"></i> <span
+                        id="navNombre">Perfil</span></a>
+                <a href="Login/login.html" id="btnCerrarSesion"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="filter-bar">
+            <div class="filter-pills">
+                <button class="pill active">Todos</button>
+                <button class="pill">Gastronomía</button>
+                <button class="pill">Eventos</button>
+                <button class="pill">Cultura</button>
+                <button class="pill">Deportes</button>
+            </div>
+            <button class="filter-btn">
+                <i class="fas fa-sliders-h"></i> Filtros
+            </button>
+        </div>
+
+        <div class="posts-grid" id="postsGrid">
+            <p style="grid-column:1/-1;text-align:center;padding:40px;color:#777;">Cargando publicaciones...</p>
+        </div>
+    </main>
+
+    <!-- OVERLAY MODAL CREATE POST -->
+    <div class="overlay" id="createPostOverlay" style="display: none;">
+        <div class="modal">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <h2>Estudio de Creación</h2>
+                    <span class="badge">NL 2026</span>
+                </div>
+                <p>Comparte tu viaje mundialista en Monterrey con el mundo.</p>
+                <button class="close-btn" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <!-- COLUMNA IZQUIERDA -->
+                <div class="col-left">
+                    <div>
+                        <div class="section-label">
+                            <i class="fas fa-photo-film"></i> CONTENIDO MULTIMEDIA
+                            <span class="required-badge">OPCIONAL ✦</span>
+                        </div>
+                        <div class="dropzone">
+                            <div class="dropzone-icon"><i class="fas fa-file-arrow-up"></i></div>
+                            <h3>Suelta tus mejores momentos aquí</h3>
+                            <p>Sube fotos o videos de alta calidad del estadio o de los Fan<br />Zones de la ciudad.</p>
+                            <label for="file-upload" class="select-btn select-btn-upload">Seleccionar Archivos</label>
+                            <input id="file-upload" class="hidden-input" type="file" multiple
+                                accept="video/mp4,video/quicktime,image/jpeg,image/png" />
+                            <div class="file-types">MP4, MOV, JPG, PNG • MÁX 50MB</div>
+                            <div id="imgPreviewGrid"
+                                style="display:none;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;margin-top:10px;max-height:110px;overflow-y:auto;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rules-box">
+                        <div class="rules-title"><i class="fas fa-shield-halved"></i> Reglas de la Comunidad</div>
+                        <div class="rule-item"><i class="fas fa-circle-check"></i> Enfócate en experiencias del Mundial
+                            en Nuevo León.</div>
+                        <div class="rule-item"><i class="fas fa-circle-check"></i> Asegura contenido de alta resolución
+                            para mayor visibilidad.</div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA -->
+                <div class="col-right">
+
+                    <!-- TÍTULO -->
+                    <div>
+                        <div class="field-label">
+                            Título <span class="req">✦</span>
+                            <span class="char-count" id="titleCount">0/120</span>
+                        </div>
+                        <textarea id="postTitulo" rows="2" placeholder="Dale un título atractivo a tu publicación..."
+                            maxlength="120" style="height:60px;"></textarea>
+                    </div>
+
+                    <!-- DESCRIPCIÓN -->
+                    <div>
+                        <div class="field-label">
+                            Descripción <span class="req">✦</span>
+                            <span class="char-count" id="charCount">0/500</span>
+                        </div>
+                        <textarea id="postDescripcion" rows="5"
+                            placeholder="Cuéntale a los fans sobre tu experiencia en Monterrey... Usa #Monterrey2026 #NuevoLeon"
+                            maxlength="500"></textarea>
+                    </div>
+
+                    <!-- CATEGORÍA -->
+                    <div>
+                        <div class="field-label">Categoría <span class="req">✦</span></div>
+                        <select id="postCategoria" title="Categoría" aria-label="Categoría">
+                            <option value="" disabled selected>Selecciona una categoría</option>
+                            <option>Estadio</option>
+                            <option>Fan Zone</option>
+                            <option>Gastronomía</option>
+                            <option>Turismo</option>
+                            <option>Celebración</option>
+                            <option>Deportes</option>
+                            <option>Cultura</option>
+                            <option>Eventos</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="field-label">Ubicación</div>
+                        <div class="location-input-wrap" style="margin-bottom:10px">
+                            <i class="fas fa-location-dot"></i>
+                            <input id="postUbicacion" class="location-input" type="text"
+                                placeholder="Busca un estadio, parque o lugar..." />
+                        </div>
+                        <div class="map-preview" style="padding:0;overflow:hidden;">
+                            <div id="createMap" style="height:100%;width:100%;min-height:120px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- VISIBILIDAD -->
+                    <div class="visibility-section">
+                        <div class="visibility-label">VISIBILIDAD</div>
+                        <div class="radio-group">
+                            <label class="radio-opt">
+                                <div class="avatar-dot"></div>
+                                <input type="radio" name="visibility" value="publica" checked />
+                                Pública
+                            </label>
+                            <label class="radio-opt">
+                                <input type="radio" name="visibility" value="comunidad" />
+                                Solo Comunidad
+                            </label>
+                        </div>
+                    </div>
+
+                    <p id="createPostError" style="color:#e74c3c;font-size:0.85rem;display:none;"></p>
+
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <div class="autosave"><i class="fas fa-rotate"></i> Auto-guardado en borradores</div>
+                <div class="footer-btns">
+                    <button class="btn-save" id="btnGuardarBorrador">Guardar Borrador</button>
+                    <button class="btn-publish" id="btnPublicarPost"><i class="fas fa-rocket"></i> Publicar
+                        Experiencia</button>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </header>
 
-  <main class="dashboard-container">
-    <div class="filter-bar">
-      <div class="filter-pills">
-        <button class="pill active">Todos</button>
-        <button class="pill">Gastronomía</button>
-        <button class="pill">Eventos</button>
-        <button class="pill">Cultura</button>
-        <button class="pill">Deportes</button>
-      </div>
-      <button class="filter-btn">
-        <i class="fas fa-sliders-h"></i> Filtros
-      </button>
-    </div>
+    <script>
+        const API = 'http://localhost:3000';
 
-    <div class="posts-grid" id="postsGrid">
-      <p style="grid-column:1/-1;text-align:center;padding:40px;color:#777;">Cargando publicaciones...</p>
-    </div>
-  </main>
+        // --- Sesión y Roles ---
+        const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
 
-  <!-- OVERLAY MODAL CREATE POST -->
-  <div class="overlay" id="createPostOverlay" style="display: none;">
-    <div class="modal">
+        if (!usuario) {
+            window.location.href = 'Login/login.html'; // Si no hay sesión, pa' fuera
+        } else {
+            // 1. Ponemos el nombre del usuario en el perfil
+            const navNombre = document.getElementById('navNombre');
+            if (navNombre) navNombre.textContent = usuario.nombre;
 
-      <!-- HEADER -->
-      <div class="modal-header">
-          <div class="modal-header-top">
-              <h2>Estudio de Creación</h2>
-              <span class="badge">NL 2026</span>
-          </div>
-          <p>Comparte tu viaje mundialista en Monterrey con el mundo.</p>
-          <button class="close-btn" aria-label="Cerrar"><i class="fas fa-times"></i></button>
-      </div>
+            // 2. Localizamos el contenedor del menú y el botón de cerrar sesión
+            const navLinks = document.querySelector('.nav-links');
+            const btnCerrarSesion = document.getElementById('btnCerrarSesion');
 
-      <!-- BODY -->
-      <div class="modal-body">
-
-          <!-- COLUMNA IZQUIERDA -->
-          <div class="col-left">
-              <div>
-                  <div class="section-label">
-                      <i class="fas fa-photo-film"></i> CONTENIDO MULTIMEDIA
-                      <span class="required-badge">OPCIONAL ✦</span>
-                  </div>
-                  <div class="dropzone">
-                      <div class="dropzone-icon"><i class="fas fa-file-arrow-up"></i></div>
-                      <h3>Suelta tus mejores momentos aquí</h3>
-                      <p>Sube fotos o videos de alta calidad del estadio o de los Fan<br />Zones de la ciudad.</p>
-                      <label for="file-upload" class="select-btn select-btn-upload">Seleccionar Archivos</label>
-                      <input id="file-upload" class="hidden-input" type="file" multiple accept="video/mp4,video/quicktime,image/jpeg,image/png" />
-                      <div class="file-types">MP4, MOV, JPG, PNG • MÁX 50MB</div>
-                      <div id="imgPreviewGrid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;margin-top:10px;max-height:110px;overflow-y:auto;"></div>
-                  </div>
-              </div>
-
-              <div class="rules-box">
-                  <div class="rules-title"><i class="fas fa-shield-halved"></i> Reglas de la Comunidad</div>
-                  <div class="rule-item"><i class="fas fa-circle-check"></i> Enfócate en experiencias del Mundial en Nuevo León.</div>
-                  <div class="rule-item"><i class="fas fa-circle-check"></i> Asegura contenido de alta resolución para mayor visibilidad.</div>
-              </div>
-          </div>
-
-          <!-- COLUMNA DERECHA -->
-          <div class="col-right">
-
-              <!-- TÍTULO -->
-              <div>
-                  <div class="field-label">
-                      Título <span class="req">✦</span>
-                      <span class="char-count" id="titleCount">0/120</span>
-                  </div>
-                  <textarea id="postTitulo" rows="2"
-                      placeholder="Dale un título atractivo a tu publicación..."
-                      maxlength="120" style="height:60px;"></textarea>
-              </div>
-
-              <!-- DESCRIPCIÓN -->
-              <div>
-                  <div class="field-label">
-                      Descripción <span class="req">✦</span>
-                      <span class="char-count" id="charCount">0/500</span>
-                  </div>
-                  <textarea id="postDescripcion" rows="5"
-                      placeholder="Cuéntale a los fans sobre tu experiencia en Monterrey... Usa #Monterrey2026 #NuevoLeon"
-                      maxlength="500"></textarea>
-              </div>
-
-              <!-- CATEGORÍA -->
-              <div>
-                  <div class="field-label">Categoría <span class="req">✦</span></div>
-                  <select id="postCategoria" title="Categoría" aria-label="Categoría">
-                      <option value="" disabled selected>Selecciona una categoría</option>
-                      <option>Estadio</option>
-                      <option>Fan Zone</option>
-                      <option>Gastronomía</option>
-                      <option>Turismo</option>
-                      <option>Celebración</option>
-                      <option>Deportes</option>
-                      <option>Cultura</option>
-                      <option>Eventos</option>
-                  </select>
-              </div>
-
-              <div>
-                  <div class="field-label">Ubicación</div>
-                  <div class="location-input-wrap" style="margin-bottom:10px">
-                      <i class="fas fa-location-dot"></i>
-                      <input id="postUbicacion" class="location-input" type="text"
-                          placeholder="Busca un estadio, parque o lugar..." />
-                  </div>
-                  <div class="map-preview" style="padding:0;overflow:hidden;">
-                      <div id="createMap" style="height:100%;width:100%;min-height:120px;"></div>
-                  </div>
-              </div>
-
-              <!-- VISIBILIDAD -->
-              <div class="visibility-section">
-                  <div class="visibility-label">VISIBILIDAD</div>
-                  <div class="radio-group">
-                      <label class="radio-opt">
-                          <div class="avatar-dot"></div>
-                          <input type="radio" name="visibility" value="publica" checked />
-                          Pública
-                      </label>
-                      <label class="radio-opt">
-                          <input type="radio" name="visibility" value="comunidad" />
-                          Solo Comunidad
-                      </label>
-                  </div>
-              </div>
-
-              <p id="createPostError" style="color:#e74c3c;font-size:0.85rem;display:none;"></p>
-
-          </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="modal-footer">
-          <div class="autosave"><i class="fas fa-rotate"></i> Auto-guardado en borradores</div>
-          <div class="footer-btns">
-              <button class="btn-save" id="btnGuardarBorrador">Guardar Borrador</button>
-              <button class="btn-publish" id="btnPublicarPost"><i class="fas fa-rocket"></i> Publicar Experiencia</button>
-          </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    const API = 'http://localhost:3000';
-
-    // --- Sesión ---
-    const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
-    if (!usuario) window.location.href = 'Login/login.html';
-    else if (document.getElementById('navNombre')) document.getElementById('navNombre').textContent = usuario.nombre;
-
-    // --- Cerrar sesión ---
-    document.getElementById('btnCerrarSesion').addEventListener('click', e => {
-        e.preventDefault();
-        sessionStorage.removeItem('usuario');
-        window.location.href = 'Login/login.html';
-    });
-
-    // --- Modal ---
-    const openModalBtn = document.getElementById('openCreatePostModal');
-    const overlay      = document.getElementById('createPostOverlay');
-    const closeBtn     = document.querySelector('.close-btn');
-
-    document.getElementById('postTitulo').addEventListener('input', function() {
-        document.getElementById('titleCount').textContent = this.value.length + '/120';
-    });
-    document.getElementById('postDescripcion').addEventListener('input', function() {
-        document.getElementById('charCount').textContent = this.value.length + '/500';
-    });
-
-    openModalBtn.addEventListener('click', e => { e.preventDefault(); overlay.style.display = 'flex'; setTimeout(initCreateMap, 150); });
-    closeBtn.addEventListener('click', () => overlay.style.display = 'none');
-    window.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
-
-    // ── Comprimir imagen con canvas (portada de tarjeta) ──
-    function resizeImage(file, maxW = 640, maxH = 480, quality = 0.70) {
-        return new Promise(resolve => {
-            const img = new Image();
-            const url = URL.createObjectURL(file);
-            img.onload = () => {
-                const scale = Math.min(maxW / img.width, maxH / img.height, 1);
-                const canvas = document.createElement('canvas');
-                canvas.width  = Math.round(img.width  * scale);
-                canvas.height = Math.round(img.height * scale);
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                URL.revokeObjectURL(url);
-                resolve(canvas.toDataURL('image/jpeg', quality));
-            };
-            img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
-            img.src = url;
-        });
-    }
-
-    // ── Previsualización de imágenes ──
-    let selectedImages = [];
-    document.getElementById('file-upload').addEventListener('change', async function() {
-        selectedImages = [];
-        const grid = document.getElementById('imgPreviewGrid');
-        grid.innerHTML = '';
-        const imgFiles = Array.from(this.files).filter(f => f.type.startsWith('image/'));
-        if (!imgFiles.length) { grid.style.display = 'none'; return; }
-        grid.style.display = 'grid';
-        for (const file of imgFiles) {
-            const b64 = await resizeImage(file);
-            if (!b64) continue;
-            selectedImages.push(b64);
-            const img = document.createElement('img');
-            img.src = b64;
-            img.title = file.name;
-            img.style.cssText = 'width:100%;height:68px;object-fit:cover;border-radius:6px;border:2px solid #ffc107;';
-            grid.appendChild(img);
-        }
-    });
-
-    // ── Mapa Leaflet ──
-    let createMap, createMarker;
-    function initCreateMap() {
-        if (createMap) { createMap.invalidateSize(); return; }
-        createMap = L.map('createMap', { zoomControl: true, attributionControl: false })
-                     .setView([25.6866, -100.3161], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(createMap);
-    }
-
-    // ── Geocodificación al escribir dirección ──
-    let geoTimer;
-    document.getElementById('postUbicacion').addEventListener('input', function() {
-        clearTimeout(geoTimer);
-        const q = this.value.trim();
-        if (q.length < 3 || !createMap) return;
-        geoTimer = setTimeout(async () => {
-            try {
-                const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ', Nuevo León, México')}&limit=1&accept-language=es`);
-                const d = await r.json();
-                if (d.length) {
-                    const ll = [parseFloat(d[0].lat), parseFloat(d[0].lon)];
-                    createMap.setView(ll, 15);
-                    if (createMarker) { createMarker.setLatLng(ll); createMarker.getPopup().setContent(q).openOn(createMap); }
-                    else createMarker = L.marker(ll).addTo(createMap).bindPopup(q).openPopup();
-                }
-            } catch(e) {}
-        }, 800);
-    });
-
-    // --- Utilidades ---
-    function timeAgo(dateStr) {
-        const diff = (Date.now() - new Date(dateStr)) / 1000;
-        if (diff < 60)    return 'Hace un momento';
-        if (diff < 3600)  return `Hace ${Math.floor(diff/60)} min`;
-        if (diff < 86400) return `Hace ${Math.floor(diff/3600)} h`;
-        return new Date(dateStr).toLocaleDateString('es-MX');
-    }
-
-    function getCardImage(imagen) {
-        if (!imagen) return 'Recursos/tacos.jpg';
-        // Soporta: base64 directo, JSON array legacy, o URL normal
-        if (imagen.startsWith('data:') || imagen.startsWith('http') || imagen.startsWith('/')) return imagen;
-        try {
-            const parsed = JSON.parse(imagen);
-            return Array.isArray(parsed) && parsed.length ? parsed[0] : 'Recursos/tacos.jpg';
-        } catch {
-            return 'Recursos/tacos.jpg';
-        }
-    }
-
-    // --- Cargar posts ---
-    async function cargarPosts(categoria = '') {
-        const grid = document.getElementById('postsGrid');
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#777;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
-        try {
-            const url = (categoria && categoria !== 'Todos')
-                ? `${API}/api/posts?categoria=${encodeURIComponent(categoria)}`
-                : `${API}/api/posts`;
-            const data = await fetch(url).then(r => r.json());
-
-            if (!Array.isArray(data) || !data.length) {
-                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#777;">No hay publicaciones en esta categoría.</p>';
-                return;
+            // 3. Evaluamos el rol e inyectamos el botón adecuado
+            if (usuario.rol === 'administrador') {
+                // El administrador ve los reportes de moderación
+                const adminBtn = document.createElement('a');
+                adminBtn.href = 'PanelAdministracion/admin.html';
+                adminBtn.innerHTML = '<i class="fas fa-user-shield"></i> Administración';
+                navLinks.insertBefore(adminBtn, btnCerrarSesion);
+                
+            } else if (usuario.rol === 'moderador') {
+                // El moderador ve su panel de control
+                const modBtn = document.createElement('a');
+                modBtn.href = 'PanelModeracion/moderacion.html';
+                modBtn.innerHTML = '<i class="fas fa-shield-alt"></i> Moderación';
+                navLinks.insertBefore(modBtn, btnCerrarSesion);
             }
+            // Si el rol es 'usuario', no agregamos botones extra, se queda con la vista normal.
+        }
 
-            grid.innerHTML = data.map(p => `
+        // --- Cerrar sesión ---
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', e => {
+            e.preventDefault();
+            sessionStorage.removeItem('usuario');
+            window.location.href = 'Login/login.html';
+        });
+
+        // --- Modal ---
+        const openModalBtn = document.getElementById('openCreatePostModal');
+        const overlay = document.getElementById('createPostOverlay');
+        const closeBtn = document.querySelector('.close-btn');
+
+        document.getElementById('postTitulo').addEventListener('input', function () {
+            document.getElementById('titleCount').textContent = this.value.length + '/120';
+        });
+        document.getElementById('postDescripcion').addEventListener('input', function () {
+            document.getElementById('charCount').textContent = this.value.length + '/500';
+        });
+
+        openModalBtn.addEventListener('click', e => { e.preventDefault(); overlay.style.display = 'flex'; setTimeout(initCreateMap, 150); });
+        closeBtn.addEventListener('click', () => overlay.style.display = 'none');
+        window.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
+
+        // ── Comprimir imagen con canvas (portada de tarjeta) ──
+        function resizeImage(file, maxW = 640, maxH = 480, quality = 0.70) {
+            return new Promise(resolve => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+                img.src = url;
+            });
+        }
+
+        // ── Previsualización de imágenes ──
+        let selectedImages = [];
+        document.getElementById('file-upload').addEventListener('change', async function () {
+            selectedImages = [];
+            const grid = document.getElementById('imgPreviewGrid');
+            grid.innerHTML = '';
+            const imgFiles = Array.from(this.files).filter(f => f.type.startsWith('image/'));
+            if (!imgFiles.length) { grid.style.display = 'none'; return; }
+            grid.style.display = 'grid';
+            for (const file of imgFiles) {
+                const b64 = await resizeImage(file);
+                if (!b64) continue;
+                selectedImages.push(b64);
+                const img = document.createElement('img');
+                img.src = b64;
+                img.title = file.name;
+                img.style.cssText = 'width:100%;height:68px;object-fit:cover;border-radius:6px;border:2px solid #ffc107;';
+                grid.appendChild(img);
+            }
+        });
+
+        // ── Mapa Leaflet ──
+        let createMap, createMarker;
+        function initCreateMap() {
+            if (createMap) { createMap.invalidateSize(); return; }
+            createMap = L.map('createMap', { zoomControl: true, attributionControl: false })
+                .setView([25.6866, -100.3161], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(createMap);
+        }
+
+        // ── Geocodificación al escribir dirección ──
+        let geoTimer;
+        document.getElementById('postUbicacion').addEventListener('input', function () {
+            clearTimeout(geoTimer);
+            const q = this.value.trim();
+            if (q.length < 3 || !createMap) return;
+            geoTimer = setTimeout(async () => {
+                try {
+                    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ', Nuevo León, México')}&limit=1&accept-language=es`);
+                    const d = await r.json();
+                    if (d.length) {
+                        const ll = [parseFloat(d[0].lat), parseFloat(d[0].lon)];
+                        createMap.setView(ll, 15);
+                        if (createMarker) { createMarker.setLatLng(ll); createMarker.getPopup().setContent(q).openOn(createMap); }
+                        else createMarker = L.marker(ll).addTo(createMap).bindPopup(q).openPopup();
+                    }
+                } catch (e) { }
+            }, 800);
+        });
+
+        // --- Utilidades ---
+        function timeAgo(dateStr) {
+            const diff = (Date.now() - new Date(dateStr)) / 1000;
+            if (diff < 60) return 'Hace un momento';
+            if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+            if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
+            return new Date(dateStr).toLocaleDateString('es-MX');
+        }
+
+        function getCardImage(imagen) {
+            if (!imagen) return 'Recursos/tacos.jpg';
+            // Soporta: base64 directo, JSON array legacy, o URL normal
+            if (imagen.startsWith('data:') || imagen.startsWith('http') || imagen.startsWith('/')) return imagen;
+            try {
+                const parsed = JSON.parse(imagen);
+                return Array.isArray(parsed) && parsed.length ? parsed[0] : 'Recursos/tacos.jpg';
+            } catch {
+                return 'Recursos/tacos.jpg';
+            }
+        }
+
+        // --- Cargar posts ---
+        async function cargarPosts(categoria = '', busqueda = '') {
+            const grid = document.getElementById('postsGrid');
+            grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#777;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+
+            try {
+                // Construimos la URL dinámica combinando categoría, búsqueda y el rompecaché
+                let url = `${API}/api/posts?t=${Date.now()}`;
+
+                if (categoria && categoria !== 'Todos') {
+                    url += `&categoria=${encodeURIComponent(categoria)}`;
+                }
+                if (busqueda) {
+                    url += `&busqueda=${encodeURIComponent(busqueda)}`;
+                }
+
+                const data = await fetch(url, {
+                    headers: { 'Cache-Control': 'no-cache' }
+                }).then(r => r.json());
+
+                if (!Array.isArray(data) || !data.length) {
+                    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#777;">No se encontraron publicaciones con esos criterios.</p>';
+                    return;
+                }
+
+                grid.innerHTML = data.map(p => `
                 <div class="post-card">
                     <a href="Post/Post.html?id=${p.id_publicacion}" class="post-card-link">
                         <div class="card-image-wrapper">
@@ -342,73 +385,92 @@
                         </div>
                     </a>
                 </div>`).join('');
-        } catch {
-            grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#e74c3c;">Error al cargar publicaciones. ¿Está el servidor activo?</p>';
+            } catch {
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#e74c3c;">Error al cargar publicaciones. ¿Está el servidor activo?</p>';
+            }
         }
-    }
 
-    cargarPosts();
+        cargarPosts();
+    
+        // --- Buscador con Debounce ---
+        let timeoutBuscador;
+        const inputBuscador = document.getElementById('searchInput');
 
-    // --- Filtro por categoría ---
-    document.querySelectorAll('.pill').forEach(pill => {
-        pill.addEventListener('click', function() {
-            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-            this.classList.add('active');
-            cargarPosts(this.textContent.trim());
+        inputBuscador.addEventListener('input', function(e) {
+            // Limpiamos el temporizador anterior si sigues escribiendo
+            clearTimeout(timeoutBuscador); 
+            
+            const textoBusqueda = e.target.value.trim();
+            
+            // Obtenemos la categoría que esté seleccionada actualmente en los botones redondos
+            const categoriaActiva = document.querySelector('.pill.active')?.textContent.trim() || 'Todos';
+
+            // Esperamos 500ms después de que termines de teclear para hacer la consulta
+            timeoutBuscador = setTimeout(() => {
+                cargarPosts(categoriaActiva, textoBusqueda);
+            }, 500); 
         });
-    });
 
-    // --- Publicar post ---
-    document.getElementById('btnPublicarPost').addEventListener('click', async function() {
-        const titulo      = document.getElementById('postTitulo').value.trim();
-        const descripcion = document.getElementById('postDescripcion').value.trim();
-        const categoria   = document.getElementById('postCategoria').value;
-        const ubicacion   = document.getElementById('postUbicacion').value.trim();
-        const errorEl     = document.getElementById('createPostError');
-
-        errorEl.style.display = 'none';
-        if (!titulo || !descripcion || !categoria) {
-            errorEl.textContent = 'Título, descripción y categoría son obligatorios.';
-            errorEl.style.display = 'block';
-            return;
-        }
-
-        this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
-        try {
-            const imagen = selectedImages.length ? selectedImages[0] : null;
-            const res = await fetch(`${API}/api/posts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titulo, descripcion, categoria, ubicacion, id_usuario: usuario.id, imagen })
+        // --- Filtro por categoría ---
+        document.querySelectorAll('.pill').forEach(pill => {
+            pill.addEventListener('click', function () {
+                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                cargarPosts(this.textContent.trim());
             });
-            const data = await res.json();
-            if (!res.ok) { errorEl.textContent = data.error; errorEl.style.display = 'block'; return; }
+        });
 
-            overlay.style.display = 'none';
-            document.getElementById('postTitulo').value      = '';
-            document.getElementById('postDescripcion').value = '';
-            document.getElementById('postCategoria').value   = '';
-            document.getElementById('postUbicacion').value   = '';
-            document.getElementById('titleCount').textContent  = '0/120';
-            document.getElementById('charCount').textContent   = '0/500';
-            document.getElementById('file-upload').value       = '';
-            selectedImages = [];
-            const previewGrid = document.getElementById('imgPreviewGrid');
-            previewGrid.innerHTML = '';
-            previewGrid.style.display = 'none';
-            if (createMarker) { createMap.removeLayer(createMarker); createMarker = null; }
-            cargarPosts();
-        } catch {
-            errorEl.textContent = 'No se pudo conectar con el servidor.';
-            errorEl.style.display = 'block';
-        } finally {
-            this.disabled = false;
-            this.innerHTML = '<i class="fas fa-rocket"></i> Publicar Experiencia';
-        }
-    });
-  </script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        // --- Publicar post ---
+        document.getElementById('btnPublicarPost').addEventListener('click', async function () {
+            const titulo = document.getElementById('postTitulo').value.trim();
+            const descripcion = document.getElementById('postDescripcion').value.trim();
+            const categoria = document.getElementById('postCategoria').value;
+            const ubicacion = document.getElementById('postUbicacion').value.trim();
+            const errorEl = document.getElementById('createPostError');
+
+            errorEl.style.display = 'none';
+            if (!titulo || !descripcion || !categoria) {
+                errorEl.textContent = 'Título, descripción y categoría son obligatorios.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+            try {
+                const imagen = selectedImages.length ? selectedImages[0] : null;
+                const res = await fetch(`${API}/api/posts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titulo, descripcion, categoria, ubicacion, id_usuario: usuario.id, imagen })
+                });
+                const data = await res.json();
+                if (!res.ok) { errorEl.textContent = data.error; errorEl.style.display = 'block'; return; }
+
+                overlay.style.display = 'none';
+                document.getElementById('postTitulo').value = '';
+                document.getElementById('postDescripcion').value = '';
+                document.getElementById('postCategoria').value = '';
+                document.getElementById('postUbicacion').value = '';
+                document.getElementById('titleCount').textContent = '0/120';
+                document.getElementById('charCount').textContent = '0/500';
+                document.getElementById('file-upload').value = '';
+                selectedImages = [];
+                const previewGrid = document.getElementById('imgPreviewGrid');
+                previewGrid.innerHTML = '';
+                previewGrid.style.display = 'none';
+                if (createMarker) { createMap.removeLayer(createMarker); createMarker = null; }
+                cargarPosts();
+            } catch {
+                errorEl.textContent = 'No se pudo conectar con el servidor.';
+                errorEl.style.display = 'block';
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-rocket"></i> Publicar Experiencia';
+            }
+        });
+    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 
 </html>

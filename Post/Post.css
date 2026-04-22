@@ -874,28 +874,61 @@ body {
     gap: 4px;
 }
 
+/* Comment number badge */
+.comment-index {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 10px;
+}
+
 .btn-comment-like {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     background: none;
-    border: none;
+    border: 1px solid transparent;
     font-size: 13px;
     color: var(--text-muted);
     cursor: pointer;
     padding: 5px 12px;
     border-radius: 8px;
     font-family: "Inter", sans-serif;
-    transition: var(--transition);
+    transition: color 0.2s, background 0.2s, transform 0.15s, border-color 0.2s;
 }
 
 .btn-comment-like:hover {
     color: var(--danger);
     background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.15);
 }
 
 .btn-comment-like.liked {
     color: var(--danger);
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    cursor: default;
+}
+
+.like-count {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.like-label {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 400;
 }
 
 /* Empty & loading states */

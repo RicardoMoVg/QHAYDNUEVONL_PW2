@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Librerías para Reportes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -160,8 +164,8 @@
                 <p id="reportDesc" class="report-info">Listado de todas las publicaciones borradas. Incluye: título, usuario, motivo, fecha.</p>
                 <label class="form-label">Formato de descarga:</label>
                 <div class="format-buttons">
-                    <button class="report-btn" onclick="downloadReport('PDF')"><i class="fas fa-file-pdf" style="color:#e11d48;"></i> PDF</button>
-                    <button class="report-btn" onclick="downloadReport('Excel')"><i class="fas fa-file-excel" style="color:#15803d;"></i> Excel</button>
+                    <button class="report-btn" onclick="generarReporte('PDF')"><i class="fas fa-file-pdf" style="color:#e11d48;"></i> PDF</button>
+                    <button class="report-btn" onclick="generarReporte('Excel')"><i class="fas fa-file-excel" style="color:#15803d;"></i> Excel</button>
                 </div>
             </div>
         </div>
@@ -173,7 +177,8 @@
         // --- Sesión y permisos ---
         const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
         if (!usuario || usuario.rol !== 'administrador') {
-            window.location.href = '../Login/login.html';
+            alert('Acceso denegado. No tienes permisos de administrador.');
+            window.location.href = '../index.html';
         }
 
         document.getElementById('btnCerrarSesion').addEventListener('click', e => {
@@ -236,7 +241,11 @@
         async function eliminarPost(id, btn) {
             if (!confirm('¿Eliminar esta publicación?')) return;
             btn.disabled = true;
-            const res = await fetch(`${API}/api/posts/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/posts/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_moderador: usuario.id })
+            });
             if (res.ok) { btn.closest('.content-item').remove(); cargarStats(); }
             else { btn.disabled = false; alert('Error al eliminar.'); }
         }
@@ -269,7 +278,11 @@
         async function eliminarUser(id, btn) {
             if (!confirm('¿Eliminar este usuario?')) return;
             btn.disabled = true;
-            const res = await fetch(`${API}/api/users/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_moderador: usuario.id })
+            });
             if (res.ok) { btn.closest('.content-item').remove(); cargarStats(); }
             else { btn.disabled = false; alert('Error al eliminar.'); }
         }
@@ -301,7 +314,11 @@
         async function eliminarComentario(id, btn) {
             if (!confirm('¿Eliminar este comentario?')) return;
             btn.disabled = true;
-            const res = await fetch(`${API}/api/comments/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/comments/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_moderador: usuario.id })
+            });
             if (res.ok) { btn.closest('.content-item').remove(); cargarStats(); }
             else { btn.disabled = false; alert('Error al eliminar.'); }
         }
@@ -363,6 +380,7 @@
                                 <code>${p.autor} • ${p.categoria}</code>
                                 <div class="admin-meta">
                                     <span>Eliminada el: <b>${new Date(p.fecha_creacion).toLocaleDateString('es-MX')}</b></span>
+                                    <span>Por: <b style="color:#dc2626;">${p.moderador || 'Sistema'}</b></span>
                                 </div>
                             </div>
                         </div>
@@ -385,6 +403,7 @@
                                 <code>${u.correo}</code>
                                 <div class="admin-meta">
                                     <span>Rol: <b>${u.rol}</b></span>
+                                    <span>Eliminado por: <b style="color:#dc2626;">${u.moderador || 'Sistema'}</b></span>
                                 </div>
                             </div>
                         </div>
@@ -434,9 +453,59 @@
             document.getElementById('reportDesc').textContent = reportDescriptions[this.value];
         });
 
-        function downloadReport(format) {
-            const t = document.getElementById('reportType');
-            alert(`Generando reporte: "${t.options[t.selectedIndex].text}" en formato ${format}...`);
+        async function generarReporte(formato) {
+            const tipo = document.getElementById('reportType').value;
+            const tEl = document.getElementById('reportType');
+            const desc = tEl.options[tEl.selectedIndex].text;
+            
+            let endpoint = '';
+            let mapFn = null;
+            let columns = [];
+
+            if (tipo === 'posts') {
+                endpoint = `${API}/api/posts?estado=eliminado`;
+                columns = ["ID", "Título", "Autor", "Categoría", "Moderador", "Fecha"];
+                mapFn = p => ({ ID: p.id_publicacion, Título: p.titulo, Autor: p.autor, Categoría: p.categoria, Moderador: p.moderador || 'N/A', Fecha: new Date(p.fecha_creacion).toLocaleDateString('es-MX') });
+            } else if (tipo === 'users') {
+                endpoint = `${API}/api/users?estado=eliminado`;
+                columns = ["ID", "Nombre", "Correo", "Rol", "Moderador"];
+                mapFn = u => ({ ID: u.id_usuario, Nombre: u.nombre, Correo: u.correo, Rol: u.rol, Moderador: u.moderador || 'N/A' });
+            } else if (tipo === 'comments') {
+                endpoint = `${API}/api/comments?estado=eliminado`;
+                columns = ["ID", "Contenido", "Autor", "Moderador", "Post", "Fecha"];
+                mapFn = c => ({ ID: c.id_comentario, Contenido: c.contenido, Autor: c.autor, Moderador: c.moderador || 'N/A', Post: c.post_titulo, Fecha: new Date(c.fecha_comentario).toLocaleDateString('es-MX') });
+            } else {
+                // General
+                endpoint = `${API}/api/posts?estado=todos`;
+                columns = ["ID", "Título", "Autor", "Estado", "Moderador", "Fecha"];
+                mapFn = p => ({ ID: p.id_publicacion, Título: p.titulo, Autor: p.autor, Estado: p.estado, Moderador: p.moderador || '—', Fecha: new Date(p.fecha_creacion).toLocaleDateString('es-MX') });
+            }
+
+            try {
+                const res = await fetch(endpoint);
+                const data = await res.json();
+                if (!data.length) { alert(`No hay datos para el reporte: ${desc}`); return; }
+
+                const rows = data.map(mapFn);
+
+                if (formato.toUpperCase() === 'EXCEL') {
+                    const ws = XLSX.utils.json_to_sheet(rows);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "AdminReport");
+                    XLSX.writeFile(wb, `AdminReport_${tipo}_${Date.now()}.xlsx`);
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    doc.setFontSize(18);
+                    doc.text(`Reporte Administrativo: ${desc}`, 14, 22);
+                    doc.setFontSize(11);
+                    doc.setTextColor(100);
+                    doc.text(`Generado por Administrador - ${new Date().toLocaleString()}`, 14, 30);
+                    doc.autoTable({ head: [columns], body: rows.map(r => Object.values(r)), startY: 40, theme: 'striped', headStyles: { fillColor: [220, 38, 38] } });
+                    doc.save(`AdminReport_${tipo}_${Date.now()}.pdf`);
+                }
+                toggleReportModal();
+            } catch (err) { console.error(err); alert('Error al generar el reporte administrativo.'); }
         }
 
         // --- Carga inicial ---

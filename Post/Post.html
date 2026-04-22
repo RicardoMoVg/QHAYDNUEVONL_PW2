@@ -141,7 +141,7 @@
           <textarea id="commentInput" placeholder="Escribe un comentario..." maxlength="500"></textarea>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
             <span id="charCountComment" style="font-size:12px; color:#64748b;">0 / 500</span>
-            <button class="btn-send" id="btnPublishComment">Publicar</button>
+            <button class="btn-send" id="btnPublishComment"><i class="fas fa-paper-plane"></i> Comentar</button>
           </div>
         </div>
       </div>
@@ -161,23 +161,45 @@
 
     // ── Sesión ──────────────────────────────────────
     const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
-    if (!usuario) window.location.href = '../Login/login.html';
-    else {
+    if (!usuario) {
+      window.location.href = '../Login/login.html';
+    } else {
+      // 1. Nombre de usuario
       const nav = document.getElementById('navNombre');
       if (nav) nav.textContent = usuario.nombre;
+
+      // 2. Roles dinámicos en el menú
+      const navLinks = document.querySelector('.nav-links');
+      const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+
+      if (usuario.rol === 'administrador') {
+        const adminBtn = document.createElement('a');
+        adminBtn.href = '../PanelAdministracion/admin.html';
+        adminBtn.innerHTML = '<i class="fas fa-user-shield"></i> Administración';
+        navLinks.insertBefore(adminBtn, btnCerrarSesion);
+      } else if (usuario.rol === 'moderador') {
+        const modBtn = document.createElement('a');
+        modBtn.href = '../PanelModeracion/moderacion.html';
+        modBtn.innerHTML = '<i class="fas fa-shield-alt"></i> Moderación';
+        navLinks.insertBefore(modBtn, btnCerrarSesion);
+      }
     }
 
-    const cerrarBtn = document.getElementById('btnCerrarSesion');
-    if (cerrarBtn) {
-      cerrarBtn.addEventListener('click', e => {
-        e.preventDefault();
-        sessionStorage.removeItem('usuario');
-        window.location.href = '../Login/login.html';
-      });
-    }
+    document.getElementById('btnCerrarSesion')?.addEventListener('click', e => {
+      e.preventDefault();
+      sessionStorage.removeItem('usuario');
+      window.location.href = '../Login/login.html';
+    });
 
     if (!postId) {
-      document.querySelector('.page-wrapper').innerHTML = '<h1 style="color:white; text-align:center; padding:50px;">Publicación no encontrada</h1>';
+      document.querySelector('.page-wrapper').innerHTML = `
+        <div style="text-align:center;padding:80px 20px;background:var(--bg-card);border-radius:20px;border:1px solid var(--border);">
+          <i class="fas fa-exclamation-circle" style="font-size:52px;color:#ef4444;display:block;margin-bottom:18px;"></i>
+          <p style="color:var(--text-secondary);margin-bottom:20px;">No se especificó ninguna publicación.</p>
+          <a href="../index.html" style="background:var(--accent);color:#0a0e1a;padding:11px 26px;border-radius:12px;text-decoration:none;font-weight:700;">
+            <i class="fas fa-home"></i> Volver al inicio
+          </a>
+        </div>`;
     } else {
       cargarPost();
       cargarComentarios();
@@ -185,140 +207,382 @@
 
     // ── Utilidades ──────────────────────────────────
     function escHTML(str) {
-      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function timeAgo(dateStr) {
       const diff = (Date.now() - new Date(dateStr)) / 1000;
       if (diff < 60) return 'Ahora';
-      if (diff < 3600) return `Hace ${Math.floor(diff / 60)}m`;
-      if (diff < 86400) return `Hace ${Math.floor(diff / 3600)}h`;
-      return new Date(dateStr).toLocaleDateString();
+      if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+      if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
+      return new Date(dateStr).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
     function parseImages(imagen) {
       if (!imagen) return [];
-      try { return JSON.parse(imagen); } catch { return [imagen]; }
+      if (imagen.startsWith('data:') || imagen.startsWith('http') || imagen.startsWith('/')) return [imagen];
+      try { const p = JSON.parse(imagen); return Array.isArray(p) ? p : [imagen]; }
+      catch { return [imagen]; }
+    }
+
+    // ── Likes persistidos en localStorage ───────────
+    const LIKED_KEY = `liked_comments_${usuario?.id || 'guest'}`;
+
+    function getLikedSet() {
+      try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || '[]')); }
+      catch { return new Set(); }
+    }
+    function saveLiked(id) {
+      const s = getLikedSet(); s.add(id);
+      localStorage.setItem(LIKED_KEY, JSON.stringify([...s]));
     }
 
     // ── Carrusel ────────────────────────────────────
-    let carouselImages = [];
-    let carouselIndex = 0;
+    let carouselImages = [], carouselIndex = 0;
 
-    function initCarousel(imagenes) {
-      carouselImages = imagenes.length ? imagenes : ['../Recursos/tacos.jpg'];
+    function initCarousel(imgs) {
+      carouselImages = imgs.length ? imgs : ['../Recursos/tacos.jpg'];
+      carouselIndex = 0;
       const track = document.getElementById('carouselTrack');
       if (!track) return;
-
       track.innerHTML = carouselImages.map(src => `
-            <div class="carousel-slide"><img src="${escHTML(src)}" onerror="this.src='../Recursos/tacos.jpg'"></div>
-        `).join('');
-
+        <div class="carousel-slide">
+          <img src="${escHTML(src)}" onerror="this.src='../Recursos/tacos.jpg'" draggable="false">
+        </div>`).join('');
       updateCarousel();
     }
 
     function updateCarousel() {
       const track = document.getElementById('carouselTrack');
       if (track) track.style.transform = `translateX(-${carouselIndex * 100}%)`;
-
       const prev = document.getElementById('carouselPrev');
       const next = document.getElementById('carouselNext');
-      if (prev) prev.style.display = carouselIndex === 0 ? 'none' : 'block';
-      if (next) next.style.display = carouselIndex === carouselImages.length - 1 ? 'none' : 'block';
+      if (prev) prev.disabled = carouselIndex === 0;
+      if (next) next.disabled = carouselIndex === carouselImages.length - 1;
     }
 
     document.getElementById('carouselPrev')?.addEventListener('click', () => { if (carouselIndex > 0) { carouselIndex--; updateCarousel(); } });
     document.getElementById('carouselNext')?.addEventListener('click', () => { if (carouselIndex < carouselImages.length - 1) { carouselIndex++; updateCarousel(); } });
 
-    // ── Datos ───────────────────────────────────────
+    // Swipe táctil
+    (function () {
+      const vp = document.getElementById('carouselViewport');
+      if (!vp) return;
+      let sx = 0;
+      vp.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+      vp.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) < 45) return;
+        if (dx < 0 && carouselIndex < carouselImages.length - 1) { carouselIndex++; updateCarousel(); }
+        if (dx > 0 && carouselIndex > 0) { carouselIndex--; updateCarousel(); }
+      });
+    })();
+
+    // ── Cargar post ──────────────────────────────────
+    let mapInstance = null;
+
     async function cargarPost() {
       try {
         const res = await fetch(`${API}/api/posts/${postId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const post = await res.json();
 
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        document.title = post.titulo + ' — ¿Qué hay de nuevo, NL?';
+
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        const fecha = new Date(post.fecha_creacion).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
         set('postTitle', post.titulo);
         set('postAuthorName', post.autor);
-        set('postAuthorSub', `Publicado el ${new Date(post.fecha_creacion).toLocaleDateString()}`);
+        set('postAuthorSub', `Publicado el ${fecha}`);
         set('postCategoryBadge', post.categoria);
         set('postDescriptionText', post.descripcion);
-        set('likeCount', post.likes || 0);
-
+        set('likeCount', post.likes ?? 0);
         set('infoAuthor', post.autor);
-        set('infoDate', new Date(post.fecha_creacion).toLocaleDateString());
+        set('infoDate', fecha);
         set('infoLocation', post.ubicacion || 'Sin ubicación');
         set('infoCategory', post.categoria);
-        set('infoLikes', `${post.likes || 0} likes`);
+        set('infoLikes', `${post.likes ?? 0} likes`);
 
         initCarousel(parseImages(post.imagen));
 
         if (post.ubicacion) {
           const tags = document.getElementById('tagsContainer');
-          if (tags) tags.innerHTML = `<span class="tag"><i class="fas fa-map-marker-alt"></i> ${escHTML(post.ubicacion)}</span>`;
+          if (tags) tags.innerHTML = `
+            <span class="tag"><i class="fas fa-map-marker-alt"></i> ${escHTML(post.ubicacion)}</span>
+            <span class="tag"><i class="fas fa-tag"></i> #${escHTML(post.categoria)}</span>
+            <span class="tag"><i class="fas fa-globe-americas"></i> #NuevoLeón2026</span>`;
 
-          document.getElementById('mapSection').style.display = 'block';
-          const map = L.map('postMap').setView([25.6866, -100.3161], 12);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-          fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(post.ubicacion)}&limit=1`)
-            .then(r => r.json())
-            .then(data => {
-              if (data[0]) {
-                const ll = [data[0].lat, data[0].lon];
-                map.setView(ll, 15);
-                L.marker(ll).addTo(map).bindPopup(escHTML(post.ubicacion)).openPopup();
-              }
-            });
+          if (!mapInstance) {
+            document.getElementById('mapSection').style.display = 'block';
+            mapInstance = L.map('postMap').setView([25.6866, -100.3161], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(mapInstance);
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(post.ubicacion)}&limit=1&accept-language=es`)
+              .then(r => r.json())
+              .then(data => {
+                if (data && data[0]) {
+                  const ll = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                  mapInstance.setView(ll, 15);
+                  L.marker(ll).addTo(mapInstance).bindPopup(`<b>${escHTML(post.ubicacion)}</b>`).openPopup();
+                }
+              }).catch(console.error);
+          }
         }
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error('Error al cargar post:', err);
+        const t = document.getElementById('postTitle');
+        if (t) t.textContent = 'Publicación no encontrada.';
+      }
     }
 
+    // ── Cargar comentarios ────────────────────────────
     async function cargarComentarios() {
       const list = document.getElementById('commentsList');
       if (!list) return;
 
-      try {
-        const res = await fetch(`${API}/api/posts/${postId}/comments`);
-        const comments = await res.json();
+      list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Cargando comentarios...</div>';
 
-        document.getElementById('commentCount').textContent = comments.length;
+      try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments?t=${Date.now()}`, {
+          headers: {
+            'Cache-Control': 'no-cache' // Le decimos explícitamente que no use memoria
+          }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const comments = await res.json();
+        if (!Array.isArray(comments)) throw new Error('Respuesta inválida');
+
+        const countEl = document.getElementById('commentCount');
+        if (countEl) countEl.textContent = comments.length;
 
         if (!comments.length) {
-          list.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">No hay comentarios aún.</p>';
+          list.innerHTML = `
+            <div class="empty-comments">
+              <i class="far fa-comment-dots"></i>
+              <p>No hay comentarios aún.<br><span style="font-size:13px;opacity:.6;">¡Sé el primero en comentar!</span></p>
+            </div>`;
           return;
         }
 
-        list.innerHTML = comments.map(c => `
-                <div class="comment-item">
-                    <img src="../Recursos/perfil.jpg" class="comment-avatar">
-                    <div style="flex:1;">
-                        <div class="comment-author">${escHTML(c.autor)} <span class="comment-time">${timeAgo(c.fecha_creacion)}</span></div>
-                        <div class="comment-text">${escHTML(c.contenido)}</div>
-                    </div>
+        const liked = getLikedSet();
+
+        list.innerHTML = comments.map((c, idx) => {
+          const isLiked = liked.has(c.id_comentario);
+          const likesN = c.likes ?? 0;
+          return `
+            <div class="comment-item" data-id="${c.id_comentario}">
+              <div class="comment-index">${idx + 1}</div>
+              <img src="../Recursos/perfil.jpg" class="comment-avatar" alt="${escHTML(c.autor)}">
+              <div class="comment-body">
+                <div class="comment-head">
+                  <span class="comment-author">${escHTML(c.autor)}</span>
+                  <span class="comment-time"><i class="far fa-clock"></i> ${timeAgo(c.fecha_comentario)}</span>
                 </div>
-            `).join('');
-      } catch (err) { console.error(err); }
+                <p class="comment-text">${escHTML(c.contenido)}</p>
+                <div class="comment-actions-row">
+                  <button class="btn-comment-like ${isLiked ? 'liked' : ''}"
+                          data-liked="${isLiked ? '1' : ''}"
+                          onclick="toggleCommentLike(this, ${c.id_comentario})"
+                          title="${isLiked ? 'Ya le diste me gusta' : 'Me gusta'}">
+                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                    <span class="like-count">${likesN}</span>
+                    ${likesN > 0 ? `<span class="like-label">${likesN === 1 ? 'me gusta' : 'me gusta'}</span>` : ''}
+                  </button>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+
+      } catch (err) {
+        console.error('Error al cargar comentarios:', err);
+        list.innerHTML = `
+          <div style="text-align:center;padding:30px;color:#ef4444;">
+            <i class="fas fa-exclamation-triangle" style="display:block;font-size:28px;margin-bottom:10px;"></i>
+            Error al cargar comentarios.
+            <br>
+            <button onclick="cargarComentarios()"
+              style="margin-top:12px;background:var(--accent);color:#0a0e1a;border:none;padding:8px 18px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;">
+              <i class="fas fa-redo"></i> Reintentar
+            </button>
+          </div>`;
+      }
     }
 
-    // ── Publicar ────────────────────────────────────
-    document.getElementById('btnPublishComment')?.addEventListener('click', async function () {
-      const input = document.getElementById('commentInput');
-      const content = input.value.trim();
-      if (!content) return;
+    // ── Like en comentario ────────────────────────────
+    async function toggleCommentLike(btn, commentId) {
+      if (btn.dataset.liked || btn.dataset.busy) return;
+      btn.dataset.busy = '1';
 
-      this.disabled = true;
-      this.textContent = 'Enviando...';
+      const icon = btn.querySelector('i');
+      const count = btn.querySelector('.like-count');
+
+      // Optimistic UI
+      if (icon) icon.className = 'fas fa-heart';
+      if (count) count.textContent = parseInt(count.textContent || 0) + 1;
+      btn.classList.add('liked');
+      btn.style.transform = 'scale(1.3)';
+      setTimeout(() => btn.style.transform = '', 200);
 
       try {
-        await fetch(`${API}/api/posts/${postId}/comments`, {
+        const res = await fetch(`${API}/api/comments/${commentId}/like`, { method: 'POST' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (count) count.textContent = data.likes;
+        btn.dataset.liked = '1';
+        btn.title = 'Ya le diste me gusta';
+        saveLiked(commentId);
+
+      } catch (err) {
+        console.error('Error al dar like:', err);
+        // Revertir UI si falló
+        if (icon) icon.className = 'far fa-heart';
+        if (count) count.textContent = parseInt(count.textContent || 1) - 1;
+        btn.classList.remove('liked');
+        delete btn.dataset.busy;
+      }
+    }
+
+    // ── Like del post ─────────────────────────────────
+    document.getElementById('likeBtn')?.addEventListener('click', async function () {
+      if (this.dataset.liked || this.dataset.busy) return;
+      this.dataset.busy = '1';
+
+      const icon = this.querySelector('i');
+      const countEl = document.getElementById('likeCount');
+      const prev = parseInt(countEl?.textContent || 0);
+
+      // Optimistic
+      if (icon) icon.className = 'fas fa-heart';
+      if (countEl) countEl.textContent = prev + 1;
+      this.classList.add('liked');
+
+      try {
+        const res = await fetch(`${API}/api/posts/${postId}/like`, { method: 'POST' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        if (countEl) countEl.textContent = data.likes;
+        const infoEl = document.getElementById('infoLikes');
+        if (infoEl) infoEl.textContent = data.likes + ' likes';
+        this.dataset.liked = '1';
+
+      } catch {
+        // Revertir
+        if (icon) icon.className = 'far fa-heart';
+        if (countEl) countEl.textContent = prev;
+        this.classList.remove('liked');
+        delete this.dataset.busy;
+      }
+    });
+
+    // ── Textarea: contador ───────────────────────────
+    const commentInput = document.getElementById('commentInput');
+    const charCountEl = document.getElementById('charCountComment');
+
+    commentInput?.addEventListener('input', function () {
+      const n = this.value.length;
+      if (charCountEl) {
+        charCountEl.textContent = `${n} / 500`;
+        charCountEl.style.color = n > 450 ? '#ef4444' : 'var(--text-muted)';
+      }
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+    });
+
+    commentInput?.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault();
+        document.getElementById('btnPublishComment')?.click();
+      }
+    });
+
+    // ── Publicar comentario ───────────────────────────
+    document.getElementById('btnPublishComment')?.addEventListener('click', async function () {
+      const content = commentInput?.value.trim();
+      if (!content) {
+        if (commentInput) {
+          commentInput.style.outline = '2px solid #ef4444';
+          commentInput.focus();
+          setTimeout(() => commentInput.style.outline = '', 1200);
+        }
+        return;
+      }
+
+      const btn = this;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+      try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contenido: content, id_usuario: usuario.id })
         });
-        input.value = '';
-        await cargarComentarios();
-      } catch (err) { alert('Error al comentar'); }
-      finally { this.disabled = false; this.textContent = 'Publicar'; }
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Error al publicar.'); return; }
+
+        // Limpiar formulario
+        if (commentInput) { commentInput.value = ''; commentInput.style.height = 'auto'; }
+        if (charCountEl) charCountEl.textContent = '0 / 500';
+
+        // Inyectar el comentario directo al DOM sin segunda llamada al servidor
+        const list = document.getElementById('commentsList');
+        if (list) {
+          // Quitar estado vacío si existe
+          const emptyEl = list.querySelector('.empty-comments, [style*="color:#64748b"], p');
+          if (emptyEl) emptyEl.remove();
+
+          // Calcular índice basado en cuántos comentarios ya hay
+          const existingCount = list.querySelectorAll('.comment-item').length;
+          const newIdx = existingCount + 1;
+
+          // Crear elemento del nuevo comentario
+          const commentEl = document.createElement('div');
+          commentEl.className = 'comment-item';
+          commentEl.dataset.id = data.id || '';
+          commentEl.innerHTML = `
+            <div class="comment-index">${newIdx}</div>
+            <img src="../Recursos/perfil.jpg" class="comment-avatar" alt="${escHTML(usuario.nombre)}">
+            <div class="comment-body">
+              <div class="comment-head">
+                <span class="comment-author">${escHTML(usuario.nombre)}</span>
+                <span class="comment-time"><i class="far fa-clock"></i> Ahora</span>
+              </div>
+              <p class="comment-text">${escHTML(content)}</p>
+              <div class="comment-actions-row">
+                <button class="btn-comment-like" data-liked=""
+                        onclick="toggleCommentLike(this, ${data.id || 0})"
+                        title="Me gusta">
+                  <i class="far fa-heart"></i>
+                  <span class="like-count">0</span>
+                </button>
+              </div>
+            </div>`;
+
+          list.appendChild(commentEl);
+
+          // Actualizar contador
+          const countEl = document.getElementById('commentCount');
+          if (countEl) countEl.textContent = newIdx;
+
+          // Scroll al nuevo comentario con highlight
+          requestAnimationFrame(() => {
+            commentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            commentEl.style.transition = 'background 0.3s';
+            commentEl.style.background = 'rgba(245,158,11,0.12)';
+            setTimeout(() => { commentEl.style.background = ''; }, 1800);
+          });
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo conectar con el servidor.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Comentar';
+      }
     });
   </script>
 </body>

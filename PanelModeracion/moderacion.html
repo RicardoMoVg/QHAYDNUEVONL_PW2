@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="moderacion.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Librerías para Reportes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -29,12 +33,17 @@
     </header>
 
     <main class="container">
-        <section class="section-title">
-            <div class="title-icon"><i class="fas fa-shield-halved"></i></div>
-            <div class="title-text">
-                <h1>Panel de Moderación</h1>
-                <p>Gestiona contenido, usuarios y configuración de la plataforma</p>
+        <section class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div class="title-icon"><i class="fas fa-shield-halved"></i></div>
+                <div class="title-text">
+                    <h1>Panel de Moderación</h1>
+                    <p>Gestiona contenido, usuarios y configuración de la plataforma</p>
+                </div>
             </div>
+            <button class="btn-mod" onclick="toggleReportModal()" style="width:auto; background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-file-export"></i> Generar Reporte
+            </button>
         </section>
 
         <section class="stats-grid">
@@ -108,13 +117,42 @@
         </section>
     </main>
 
+    <!-- Modal Reportes -->
+    <div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:15px; width:100%; max-width:450px; position:relative; color:#333;">
+            <button onclick="toggleReportModal()" style="position:absolute; top:15px; right:15px; border:none; background:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+            <h2 style="margin-bottom:15px; display:flex; align-items:center; gap:10px;"><i class="fas fa-file-invoice" style="color:var(--accent);"></i> Exportar Reportes</h2>
+            
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:14px;">Tipo de Reporte:</label>
+                <select id="reportType" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; font-family:inherit;">
+                    <option value="activos">Publicaciones Activas</option>
+                    <option value="eliminados">Publicaciones Eliminadas</option>
+                    <option value="usuarios">Usuarios Registrados</option>
+                    <option value="comentarios">Comentarios Recientes</option>
+                </select>
+                <p id="reportDesc" style="font-size:12px; color:#666; margin-top:8px;">Selecciona el tipo de datos que deseas exportar para auditoría o respaldo.</p>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="generarReporte('PDF')" style="flex:1; padding:12px; border-radius:8px; border:none; background:#ef4444; color:white; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button onclick="generarReporte('EXCEL')" style="flex:1; padding:12px; border-radius:8px; border:none; background:#22c55e; color:white; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API = 'http://localhost:3000';
 
         // --- Sesión y permisos ---
         const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
-        if (!usuario || (usuario.rol !== 'moderador' && usuario.rol !== 'administrador')) {
-            window.location.href = '../Login/login.html';
+        if (!usuario || usuario.rol !== 'moderador') {
+            alert('Acceso denegado. Solo moderadores pueden ver esta página.');
+            window.location.href = '../index.html';
         }
 
         document.getElementById('btnCerrarSesion').addEventListener('click', e => {
@@ -180,7 +218,11 @@
         async function eliminarPost(id, btn) {
             if (!confirm('¿Eliminar esta publicación?')) return;
             btn.disabled = true;
-            const res = await fetch(`${API}/api/posts/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/posts/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_moderador: usuario.id })
+            });
             if (res.ok) {
                 btn.closest('.content-item').remove();
                 cargarStats();
@@ -214,7 +256,11 @@
         async function eliminarUser(id, btn) {
             if (!confirm('¿Eliminar este usuario?')) return;
             btn.disabled = true;
-            const res = await fetch(`${API}/api/users/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_moderador: usuario.id })
+            });
             if (res.ok) {
                 btn.closest('.content-item').remove();
                 cargarStats();
@@ -248,7 +294,11 @@
         async function eliminarComentario(id, btn) {
             if (!confirm('¿Eliminar este comentario?')) return;
             btn.disabled = true;
-            const res = await fetch(`${API}/api/comments/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/comments/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_moderador: usuario.id })
+            });
             if (res.ok) {
                 btn.closest('.content-item').remove();
                 cargarStats();
@@ -323,6 +373,99 @@
         // --- Carga inicial ---
         cargarStats();
         cargarPubs();
+
+        // --- Funciones de Reportes ---
+        function toggleReportModal() {
+            const m = document.getElementById('reportModal');
+            m.style.display = (m.style.display === 'none') ? 'flex' : 'none';
+        }
+
+        async function generarReporte(formato) {
+            const tipo = document.getElementById('reportType').value;
+            const tEl = document.getElementById('reportType');
+            const desc = tEl.options[tEl.selectedIndex].text;
+            
+            // Determinar endpoint y mapeo de datos según el tipo
+            let endpoint = '';
+            let mapFn = null;
+            let columns = [];
+
+            if (tipo === 'activos' || tipo === 'eliminados') {
+                endpoint = `${API}/api/posts?estado=${tipo === 'activos' ? 'activo' : 'eliminado'}`;
+                columns = ["ID", "Título", "Autor", "Categoría", "Ubicación", "Fecha"];
+                mapFn = p => ({
+                    ID: p.id_publicacion,
+                    Título: p.titulo,
+                    Autor: p.autor,
+                    Categoría: p.categoria,
+                    Ubicación: p.ubicacion || 'N/A',
+                    Fecha: new Date(p.fecha_creacion).toLocaleDateString('es-MX')
+                });
+            } else if (tipo === 'usuarios') {
+                endpoint = `${API}/api/users?estado=activo`;
+                columns = ["ID", "Nombre", "Correo", "Rol", "Edad"];
+                mapFn = u => ({
+                    ID: u.id_usuario,
+                    Nombre: u.nombre,
+                    Correo: u.correo,
+                    Rol: u.rol,
+                    Edad: u.edad || '—'
+                });
+            } else if (tipo === 'comentarios') {
+                endpoint = `${API}/api/comments?estado=activo`;
+                columns = ["ID", "Contenido", "Autor", "Post", "Fecha"];
+                mapFn = c => ({
+                    ID: c.id_comentario,
+                    Contenido: c.contenido,
+                    Autor: c.autor,
+                    Post: c.post_titulo,
+                    Fecha: new Date(c.fecha_comentario).toLocaleDateString('es-MX')
+                });
+            }
+
+            try {
+                const res = await fetch(endpoint);
+                const data = await res.json();
+
+                if (!data.length) {
+                    alert(`No hay datos para generar el reporte de ${desc}.`);
+                    return;
+                }
+
+                const rows = data.map(mapFn);
+
+                if (formato === 'EXCEL') {
+                    const ws = XLSX.utils.json_to_sheet(rows);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+                    XLSX.writeFile(wb, `Reporte_${tipo}_${Date.now()}.xlsx`);
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    doc.setFontSize(18);
+                    doc.text(`Reporte de ${desc}`, 14, 22);
+                    doc.setFontSize(11);
+                    doc.setTextColor(100);
+                    doc.text(`Generado por el Panel de Moderación - ${new Date().toLocaleString()}`, 14, 30);
+
+                    const tableRows = rows.map(r => Object.values(r));
+
+                    doc.autoTable({
+                        head: [columns],
+                        body: tableRows,
+                        startY: 40,
+                        theme: 'striped',
+                        headStyles: { fillColor: [2, 132, 199] }
+                    });
+
+                    doc.save(`Reporte_${tipo}_${Date.now()}.pdf`);
+                }
+                toggleReportModal();
+            } catch (err) {
+                console.error(err);
+                alert('Error al generar el reporte.');
+            }
+        }
     </script>
 </body>
 </html>
