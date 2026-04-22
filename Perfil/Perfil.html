@@ -104,10 +104,14 @@
   <div class="header-container">
     <div class="logo-area"><img src="../Recursos/logo.png" alt="Logo" class="logo-img"/></div>
     <div class="search-area"><input type="text" placeholder="Buscar publicaciones..."/></div>
-    <nav class="nav-links">
+    <nav class="nav-links" id="mainNav">
       <a href="../index.html"><i class="fas fa-home"></i> Inicio</a>
       <a href="../index.html"><i class="fas fa-plus"></i> Publicar</a>
       <a href="Perfil.html" class="profile-btn"><i class="fas fa-user"></i> Perfil</a>
+      <!-- Enlaces dinámicos -->
+      <a href="../PanelAdministracion/admin.html" id="linkAdmin" style="display:none; background:#dc2626; color:white; padding:8px 15px; border-radius:5px;"><i class="fas fa-user-shield"></i> Administración</a>
+      <a href="../PanelModeracion/moderacion.html" id="linkMod" style="display:none; background:#0284c7; color:white; padding:8px 15px; border-radius:5px;"><i class="fas fa-shield-alt"></i> Moderación</a>
+      
       <a href="../Login/login.html" id="btnCerrarSesion"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
     </nav>
   </div>
@@ -201,6 +205,13 @@
   const API = 'http://localhost:3000';
   const usuario = JSON.parse(sessionStorage.getItem('usuario') || 'null');
   if (!usuario) window.location.href = '../Login/login.html';
+
+  // Mostrar links según el rol
+  if (usuario.rol === 'administrador') {
+    document.getElementById('linkAdmin').style.display = 'flex';
+  } else if (usuario.rol === 'moderador') {
+    document.getElementById('linkMod').style.display = 'flex';
+  }
 
   document.getElementById('btnCerrarSesion')?.addEventListener('click', e => {
     e.preventDefault(); sessionStorage.removeItem('usuario'); window.location.href = '../Login/login.html';
