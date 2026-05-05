@@ -36,7 +36,10 @@ async function updateSchema() {
              ALTER TABLE Comentarios ADD id_moderador INT;`,
             
             `IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Comentarios') AND name = 'fecha_moderacion')
-             ALTER TABLE Comentarios ADD fecha_moderacion DATETIME;`
+             ALTER TABLE Comentarios ADD fecha_moderacion DATETIME;`,
+
+            `IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Usuarios') AND name = 'tipo_perfil')
+             ALTER TABLE Usuarios ADD tipo_perfil NVARCHAR(50) DEFAULT 'personal';`
         ];
 
         for (const query of queries) {

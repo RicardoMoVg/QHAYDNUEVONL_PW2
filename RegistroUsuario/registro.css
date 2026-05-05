@@ -222,6 +222,48 @@ body {
     text-decoration: underline;
 }
 
+/* Profile Type Selector */
+.profile-type-selector {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.type-option {
+    flex: 1;
+    padding: 14px 10px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    font-family: 'Public Sans', sans-serif;
+}
+
+.type-option i {
+    font-size: 1.3rem;
+}
+
+.type-option:hover {
+    border-color: rgba(255, 184, 28, 0.55);
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.11);
+}
+
+.type-option.active {
+    border-color: var(--gold);
+    background: rgba(255, 184, 28, 0.16);
+    color: var(--white);
+    box-shadow: 0 0 18px rgba(255, 184, 28, 0.28);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
     .login-aside { display: none; }

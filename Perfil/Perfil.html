@@ -122,7 +122,7 @@
   <!-- PROFILE CARD -->
   <div class="profile-card">
     <div class="cover-section">
-      <img id="coverImg" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=960&h=230&fit=crop" alt="Portada" class="cover-photo"/>
+      <img id="coverImg" src="../Recursos/BK.jpg" alt="Portada" class="cover-photo"/>
       <div class="cover-overlay"></div>
       <button class="btn-edit-cover" title="Cambiar portada" onclick="openEditModal()"><i class="fas fa-camera"></i></button>
       <div class="avatar-wrap">
@@ -137,6 +137,9 @@
         <div class="user-meta">
           <span><i class="fas fa-envelope"></i> <span id="uCorreo">—</span></span>
           <span><i class="fas fa-user-tag"></i> <span id="uRol">—</span></span>
+          <span id="tipoBadge" style="display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;background:#ffc107;color:#001f5b;letter-spacing:.4px;">
+            <i id="tipoBadgeIcon" class="fas fa-user"></i> <span id="uTipoPerfil">Personal</span>
+          </span>
         </div>
         <p id="uBio" class="user-bio-text empty">Sin descripción aún.</p>
       </div>
@@ -251,6 +254,13 @@
       document.getElementById('uRol').textContent    = d.rol;
       document.getElementById('sPubs').textContent   = d.num_publicaciones ?? 0;
       document.getElementById('sLikes').textContent  = d.total_likes ?? 0;
+
+      const tipoPerfil = d.tipo_perfil || 'personal';
+      const esNegocio = tipoPerfil === 'negocio';
+      document.getElementById('uTipoPerfil').textContent = esNegocio ? 'Negocio' : 'Personal';
+      document.getElementById('tipoBadgeIcon').className = esNegocio ? 'fas fa-store' : 'fas fa-user';
+      document.getElementById('tipoBadge').style.background = esNegocio ? '#0284c7' : '#ffc107';
+      document.getElementById('tipoBadge').style.color = esNegocio ? '#fff' : '#001f5b';
 
       const bioEl = document.getElementById('uBio');
       if (d.descripcion) { bioEl.textContent = d.descripcion; bioEl.classList.remove('empty'); }

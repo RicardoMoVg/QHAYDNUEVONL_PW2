@@ -11,27 +11,16 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// ════════════════════════════════════════════════════════════════
-// 1. CONEXIÓN AL ORM (Sequelize)
-// ════════════════════════════════════════════════════════════════
+
 const sequelize = new Sequelize(process.env.DB_DATABASE, process.env.DB_USER, process.env.DB_PASSWORD, {
     host: process.env.DB_SERVER || 'localhost',
     dialect: 'mssql',
-    port: 63256,
+    port: parseInt(process.env.DB_PORT) || 63256,
     dialectOptions: { options: { encrypt: false, trustServerCertificate: true } },
-    logging: false // Evita que la terminal se llene de texto SQL
+    logging: false 
 });
 
-sequelize.authenticate()
-    .then(() => console.log('✅ Conectado a SQL Server vía Sequelize (db_PW2)'))
-    .catch(err => {
-        console.error('❌ Error al conectar con Sequelize:', err);
-        process.exit(1);
-    });
 
-// ════════════════════════════════════════════════════════════════
-// 2. MODELOS Y RELACIONES
-// ════════════════════════════════════════════════════════════════
 const Usuario = sequelize.define('Usuario', {
     id_usuario: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     nombre: { type: DataTypes.STRING, allowNull: false },
@@ -39,6 +28,7 @@ const Usuario = sequelize.define('Usuario', {
     contraseña: { type: DataTypes.STRING, allowNull: false },
     edad: { type: DataTypes.STRING },
     rol: { type: DataTypes.STRING, defaultValue: 'usuario' },
+    tipo_perfil: { type: DataTypes.STRING, defaultValue: 'personal' },
     estado: { type: DataTypes.STRING, defaultValue: 'activo' },
     descripcion: { type: DataTypes.STRING(500) },
     foto_perfil: { type: DataTypes.TEXT },
@@ -60,7 +50,11 @@ const Publicacion = sequelize.define('Publicacion', {
     imagen: { type: DataTypes.TEXT },
     likes: { type: DataTypes.INTEGER, defaultValue: 0 },
     estado: { type: DataTypes.STRING, defaultValue: 'activo' },
-    fecha_creacion: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+
+    // 👇 ESTAS DOS LÍNEAS SON EL CAMBIO MÁGICO 👇
+    fecha_creacion: { type: DataTypes.DATE, defaultValue: Sequelize.literal('GETDATE()') },
+    fecha_publicacion: { type: DataTypes.DATE, defaultValue: Sequelize.literal('GETDATE()') },
+
     id_usuario: { type: DataTypes.INTEGER },
     id_categoria: { type: DataTypes.INTEGER },
     id_moderador: { type: DataTypes.INTEGER },
@@ -72,7 +66,10 @@ const Comentario = sequelize.define('Comentario', {
     contenido: { type: DataTypes.STRING, allowNull: false },
     likes: { type: DataTypes.INTEGER, defaultValue: 0 },
     estado: { type: DataTypes.STRING, defaultValue: 'activo' },
-    fecha_comentario: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+
+    // 👇 EL MISMO CAMBIO AQUÍ 👇
+    fecha_comentario: { type: DataTypes.DATE, defaultValue: Sequelize.literal('GETDATE()') },
+
     id_publicacion: { type: DataTypes.INTEGER },
     id_usuario: { type: DataTypes.INTEGER },
     id_moderador: { type: DataTypes.INTEGER },
@@ -105,13 +102,13 @@ app.get('/api/test-db', async (req, res) => res.json([{ Mensaje: 'Conexión a db
 
 // ── AUTH ──
 app.post('/api/auth/register', async (req, res) => {
-    const { nombre, edad, correo, password } = req.body;
+    const { nombre, edad, correo, password, tipo_perfil } = req.body;
     if (!nombre || !edad || !correo || !password) return res.status(400).json({ error: 'Faltan campos.' });
     try {
         const existe = await Usuario.findOne({ where: { correo } });
         if (existe) return res.status(409).json({ error: 'Correo registrado.' });
         const hash = await bcrypt.hash(password, 10);
-        await Usuario.create({ nombre, edad: String(edad), correo, contraseña: hash });
+        await Usuario.create({ nombre, edad: String(edad), correo, contraseña: hash, tipo_perfil: tipo_perfil || 'personal' });
         res.status(201).json({ mensaje: 'Usuario registrado.' });
     } catch (err) { res.status(500).json({ error: 'Error interno.' }); }
 });
@@ -147,10 +144,10 @@ app.get('/api/posts', async (req, res) => {
     const { categoria, estado, busqueda } = req.query;
     try {
         const whereClause = { estado: estado && estado !== 'todos' ? estado : 'activo' };
-        if (busqueda) whereClause.titulo = busqueda;
+        if (busqueda) whereClause.titulo = { [Op.like]: `%${busqueda}%` };
 
         const includes = [
-            { model: Usuario, as: 'autor', attributes: ['id_usuario', 'nombre'] },
+            { model: Usuario, as: 'autor', attributes: ['id_usuario', 'nombre', 'tipo_perfil'] },
             { model: Usuario, as: 'modPost', attributes: ['nombre'] },
             { model: Comentario, as: 'comentariosList', where: { estado: 'activo' }, required: false }
         ];
@@ -164,7 +161,7 @@ app.get('/api/posts', async (req, res) => {
             const data = p.toJSON();
             let img = data.imagen;
             if (img) { try { const arr = JSON.parse(img); img = Array.isArray(arr) ? arr[0] : img; } catch { } }
-            return { ...data, autor: data.autor?.nombre, moderador: data.modPost?.nombre, categoria: data.categoriaData?.nombre_categoria, num_comentarios: data.comentariosList?.length || 0, imagen: img };
+            return { ...data, autor: data.autor?.nombre, autor_tipo_perfil: data.autor?.tipo_perfil || 'personal', moderador: data.modPost?.nombre, categoria: data.categoriaData?.nombre_categoria, num_comentarios: data.comentariosList?.length || 0, imagen: img };
         });
         res.json(posts);
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
@@ -178,7 +175,7 @@ app.get('/api/posts/:id', async (req, res) => {
         });
         if (!p) return res.status(404).json({ error: 'No encontrada.' });
         const data = p.toJSON();
-        res.json({ ...data, autor: data.autor?.nombre, categoria: data.categoriaData?.nombre_categoria, num_comentarios: data.comentariosList?.length || 0 });
+        res.json({ ...data, autor: data.autor?.nombre, autor_tipo_perfil: data.autor?.tipo_perfil || 'personal', categoria: data.categoriaData?.nombre_categoria, num_comentarios: data.comentariosList?.length || 0 });
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
@@ -187,9 +184,16 @@ app.post('/api/posts', async (req, res) => {
     try {
         const cat = await Categoria.findOne({ where: { nombre_categoria: categoria } });
         if (!cat) return res.status(400).json({ error: 'Categoría no existe.' });
-        const post = await Publicacion.create({ titulo, descripcion, ubicacion, imagen, id_usuario, id_categoria: cat.id_categoria });
+
+        const post = await Publicacion.create({
+            titulo, descripcion, ubicacion, imagen, id_usuario, id_categoria: cat.id_categoria
+        });
+
         res.status(201).json({ mensaje: 'Publicación creada.', id: post.id_publicacion });
-    } catch (err) { res.status(500).json({ error: 'Error.' }); }
+    } catch (err) {
+        console.error("🔥 ERROR AL CREAR POST:", err); // <--- AHORA SÍ LO VERÁS EN VISUAL STUDIO
+        res.status(500).json({ error: 'Error al intentar guardar en SQL Server.' });
+    }
 });
 
 app.post('/api/posts/:id/like', async (req, res) => {
@@ -203,16 +207,44 @@ app.post('/api/posts/:id/like', async (req, res) => {
 
 app.delete('/api/posts/:id', async (req, res) => {
     try {
-        await Publicacion.update({ estado: 'eliminado', id_moderador: req.body.id_moderador || null, fecha_moderacion: new Date() }, { where: { id_publicacion: req.params.id } });
+        await Publicacion.update({
+            estado: 'eliminado',
+            id_moderador: req.body.id_moderador || null,
+            fecha_moderacion: Sequelize.literal('GETDATE()') // <--- EL FIX MÁGICO
+        }, {
+            where: { id_publicacion: req.params.id }
+        });
         res.json({ mensaje: 'Eliminada.' });
-    } catch (err) { res.status(500).json({ error: 'Error.' }); }
+    } catch (err) {
+        console.error('🔥 ERROR AL ELIMINAR POST:', err);
+        res.status(500).json({ error: 'Error.' });
+    }
 });
 
-// ── COMENTARIOS ──
+app.delete('/api/comments/:id', async (req, res) => {
+    try {
+        await Comentario.update({
+            estado: 'eliminado',
+            id_moderador: req.body.id_moderador || null,
+            fecha_moderacion: Sequelize.literal('GETDATE()')
+        }, {
+            where: { id_comentario: req.params.id }
+        });
+        res.json({ mensaje: 'Comentario eliminado.' });
+    } catch (err) {
+        console.error('🔥 ERROR AL ELIMINAR COMENTARIO:', err);
+        res.status(500).json({ error: 'Error.' });
+    }
+});
+
 app.get('/api/posts/:id/comments', async (req, res) => {
     try {
-        const comms = await Comentario.findAll({ where: { id_publicacion: req.params.id, estado: 'activo' }, include: [{ model: Usuario, as: 'autor' }], order: [['fecha_comentario', 'ASC']] });
-        res.json(comms.map(c => ({ ...c.toJSON(), autor: c.autor?.nombre })));
+        const comments = await Comentario.findAll({
+            where: { id_publicacion: req.params.id, estado: 'activo' },
+            include: [{ model: Usuario, as: 'autor', attributes: ['nombre'] }],
+            order: [['fecha_comentario', 'ASC']]
+        });
+        res.json(comments.map(c => ({ ...c.toJSON(), autor: c.autor?.nombre })));
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
@@ -238,19 +270,26 @@ app.get('/api/comments', async (req, res) => {
 app.post('/api/comments/:id/like', async (req, res) => {
     try {
         const c = await Comentario.findOne({ where: { id_comentario: req.params.id, estado: 'activo' } });
+        if (!c) return res.status(404).json({ error: 'Comentario no encontrado.' });
         c.likes += 1; await c.save();
         res.json({ likes: c.likes });
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-app.delete('/api/comments/:id', async (req, res) => {
+
+// ── USUARIOS Y PERFILES ──
+app.get('/api/users/:id', async (req, res) => {
     try {
-        await Comentario.update({ estado: 'eliminado', id_moderador: req.body.id_moderador || null, fecha_moderacion: new Date() }, { where: { id_comentario: req.params.id } });
-        res.json({ mensaje: 'Comentario eliminado.' });
+        const u = await Usuario.findByPk(req.params.id);
+        if (!u) return res.status(404).json({ error: 'Usuario no encontrado.' });
+        const posts = await Publicacion.findAll({ where: { id_usuario: req.params.id, estado: 'activo' } });
+        const total_likes = posts.reduce((sum, p) => sum + (p.likes || 0), 0);
+        const data = u.toJSON();
+        delete data.contraseña;
+        res.json({ ...data, num_publicaciones: posts.length, total_likes });
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-// ── USUARIOS Y PERFILES ──
 app.get('/api/users', async (req, res) => {
     const { estado } = req.query;
     try {
@@ -263,23 +302,33 @@ app.get('/api/users', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
-app.get('/api/users/:id', async (req, res) => {
-    try {
-        const u = await Usuario.findByPk(req.params.id);
-        if (!u) return res.status(404).json({ error: 'No encontrado.' });
-        const num_pubs = await Publicacion.count({ where: { id_usuario: req.params.id, estado: 'activo' } });
-        const total_likes = await Publicacion.sum('likes', { where: { id_usuario: req.params.id, estado: 'activo' } }) || 0;
-        res.json({ ...u.toJSON(), num_publicaciones: num_pubs, total_likes });
-    } catch (err) { res.status(500).json({ error: 'Error.' }); }
-});
-
+// ── ACTUALIZAR PERFIL ──
 app.put('/api/users/:id', async (req, res) => {
     try {
         const { nombre, descripcion, foto_perfil, foto_portada } = req.body;
+
+        // 1. Validamos que el nombre no venga vacío
+        if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio.' });
+
+        // 2. Buscamos al usuario
         const u = await Usuario.findByPk(req.params.id);
-        await u.update({ nombre, descripcion, foto_perfil: foto_perfil || u.foto_perfil, foto_portada: foto_portada || u.foto_portada });
-        res.json({ mensaje: 'Perfil actualizado.' });
-    } catch (err) { res.status(500).json({ error: 'Error.' }); }
+        if (!u) return res.status(404).json({ error: 'Usuario no encontrado.' });
+
+        // 3. Asignamos los nuevos valores (solo si nos los enviaron)
+        u.nombre = nombre;
+        if (descripcion !== undefined) u.descripcion = descripcion;
+        if (foto_perfil) u.foto_perfil = foto_perfil;
+        if (foto_portada) u.foto_portada = foto_portada;
+
+        // 4. Guardamos los cambios
+        await u.save();
+
+        res.json({ mensaje: 'Perfil actualizado correctamente.' });
+    } catch (err) {
+        // 🔥 ESTO HARÁ QUE TU TERMINAL GRITE EL ERROR EXACTO
+        console.error('🔥 ERROR AL ACTUALIZAR PERFIL:', err);
+        res.status(500).json({ error: 'Error interno al guardar en SQL Server.' });
+    }
 });
 
 app.get('/api/users/:id/posts', async (req, res) => {
@@ -295,9 +344,18 @@ app.get('/api/users/:id/posts', async (req, res) => {
 
 app.delete('/api/users/:id', async (req, res) => {
     try {
-        await Usuario.update({ estado: 'eliminado', id_moderador: req.body.id_moderador || null, fecha_moderacion: new Date() }, { where: { id_usuario: req.params.id } });
+        await Usuario.update({
+            estado: 'eliminado',
+            id_moderador: req.body.id_moderador || null,
+            fecha_moderacion: Sequelize.literal('GETDATE()')
+        }, {
+            where: { id_usuario: req.params.id }
+        });
         res.json({ mensaje: 'Usuario eliminado.' });
-    } catch (err) { res.status(500).json({ error: 'Error.' }); }
+    } catch (err) {
+        console.error('🔥 ERROR AL ELIMINAR USUARIO:', err);
+        res.status(500).json({ error: 'Error.' });
+    }
 });
 
 // ── CATEGORÍAS ──

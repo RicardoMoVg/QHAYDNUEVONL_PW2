@@ -378,7 +378,7 @@
                             <div class="post-footer">
                                 <img src="Recursos/perfil.jpg" alt="Autor" class="author-photo" />
                                 <div class="author-info">
-                                    <h4>${p.autor}</h4>
+                                    <h4>${p.autor} <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${p.autor_tipo_perfil==='negocio'?'#0284c7':'#ffc107'};color:${p.autor_tipo_perfil==='negocio'?'#fff':'#001f5b'};font-weight:700;vertical-align:middle;margin-left:4px;">${p.autor_tipo_perfil==='negocio'?'Negocio':'Personal'}</span></h4>
                                     <span>${timeAgo(p.fecha_creacion)}</span>
                                 </div>
                             </div>

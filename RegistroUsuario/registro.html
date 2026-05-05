@@ -47,6 +47,20 @@
                         <label for="confirm-password"><i class="fas fa-lock"></i> Confirmar contraseña</label>
                         <input type="password" id="confirm-password" placeholder="••••••••" required>
                     </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-id-card"></i> Tipo de perfil</label>
+                        <div class="profile-type-selector">
+                            <button type="button" class="type-option active" data-value="personal" onclick="selectTipo(this)">
+                                <i class="fas fa-user"></i>
+                                <span>Personal</span>
+                            </button>
+                            <button type="button" class="type-option" data-value="negocio" onclick="selectTipo(this)">
+                                <i class="fas fa-store"></i>
+                                <span>Negocio</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="tipoPerfil" value="personal">
+                    </div>
 
                     <p id="registerError"  style="color:#e74c3c;font-size:0.85rem;display:none;margin-bottom:8px;"></p>
                     <p id="registerSuccess" style="color:#27ae60;font-size:0.85rem;display:none;margin-bottom:8px;"></p>
@@ -55,6 +69,12 @@
                 </form>
 
                 <script>
+                    function selectTipo(btn) {
+                        document.querySelectorAll('.type-option').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        document.getElementById('tipoPerfil').value = btn.dataset.value;
+                    }
+
                     document.getElementById('registerForm').addEventListener('submit', async function(e) {
                         e.preventDefault();
 
@@ -63,6 +83,7 @@
                         const email           = document.getElementById('email').value.trim();
                         const password        = document.getElementById('password').value;
                         const confirmPassword = document.getElementById('confirm-password').value;
+                        const tipo_perfil     = document.getElementById('tipoPerfil').value;
                         const errorEl         = document.getElementById('registerError');
                         const successEl       = document.getElementById('registerSuccess');
                         const btnRegister     = document.getElementById('btnRegister');
@@ -83,7 +104,7 @@
                             const res = await fetch('http://localhost:3000/api/auth/register', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ nombre, edad, correo: email, password })
+                                body: JSON.stringify({ nombre, edad, correo: email, password, tipo_perfil })
                             });
 
                             const data = await res.json();

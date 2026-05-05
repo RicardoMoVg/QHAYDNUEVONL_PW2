@@ -84,6 +84,7 @@
             <div class="info-card-content">
               <div class="info-card-label">Autor</div>
               <div class="info-card-value" id="infoAuthor">—</div>
+              <span id="autorTipoBadge" style="display:none;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;"></span>
             </div>
           </div>
           <div class="info-card">
@@ -303,6 +304,15 @@
         set('infoCategory', post.categoria);
         set('infoLikes', `${post.likes ?? 0} likes`);
 
+        const tipoBadge = document.getElementById('autorTipoBadge');
+        if (tipoBadge) {
+          const esNegocio = post.autor_tipo_perfil === 'negocio';
+          tipoBadge.textContent = esNegocio ? '🏬 Negocio' : '👤 Personal';
+          tipoBadge.style.background = esNegocio ? '#0284c7' : '#ffc107';
+          tipoBadge.style.color = esNegocio ? '#fff' : '#001f5b';
+          tipoBadge.style.display = 'inline-block';
+        }
+
         initCarousel(parseImages(post.imagen));
 
         if (post.ubicacion) {
@@ -431,6 +441,7 @@
 
         if (count) count.textContent = data.likes;
         btn.dataset.liked = '1';
+        delete btn.dataset.busy;
         btn.title = 'Ya le diste me gusta';
         saveLiked(commentId);
 
