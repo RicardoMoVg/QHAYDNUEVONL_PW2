@@ -93,51 +93,70 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  background: white;
+  border-radius: 14px;
+  padding: 16px 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  border-left: 4px solid #ffc107;
 }
 
-.filter-pills {
-  display: flex;
-  gap: 10px;
-}
-
-.pill {
-  background-color: white;
-  color: #555;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s;
-}
-
-.pill:hover {
-  background-color: #e9ecef;
-}
-
-.pill.active {
-  background-color: #ffc107;
-  color: #001f5b;
-}
-
-.filter-btn {
-  background-color: white;
-  color: #555;
-  border: 1px solid #ddd;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+.filter-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  color: #001f5b;
+  font-weight: 600;
+  font-size: 15px;
 }
 
-.filter-btn:hover {
-  background-color: #f8f9fa;
+.filter-label i {
+  color: #ffc107;
+  font-size: 19px;
+}
+
+.filter-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.filter-select-icon {
+  position: absolute;
+  left: 14px;
+  color: #001f5b;
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.filter-select {
+  appearance: none;
+  background-color: #f0f2f5;
+  color: #001f5b;
+  border: 2px solid transparent;
+  padding: 10px 44px 10px 38px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Roboto", sans-serif;
+  min-width: 240px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23001f5b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-select:hover {
+  background-color: #e4e8f0;
+  border-color: #ffc107;
+}
+
+.filter-select:focus {
+  outline: none;
+  background-color: white;
+  border-color: #ffc107;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
 }
 
 /* --- CUADRÍCULA DE PUBLICACIONES --- */

@@ -342,6 +342,22 @@ app.get('/api/users/:id/posts', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Error.' }); }
 });
 
+app.patch('/api/users/:id/rol', async (req, res) => {
+    const { rol } = req.body;
+    const rolesValidos = ['administrador', 'moderador', 'usuario'];
+    if (!rolesValidos.includes(rol)) return res.status(400).json({ error: 'Rol no válido.' });
+    try {
+        const u = await Usuario.findByPk(req.params.id);
+        if (!u) return res.status(404).json({ error: 'Usuario no encontrado.' });
+        u.rol = rol;
+        await u.save();
+        res.json({ mensaje: 'Rol actualizado.' });
+    } catch (err) {
+        console.error('🔥 ERROR AL ACTUALIZAR ROL:', err);
+        res.status(500).json({ error: 'Error interno.' });
+    }
+});
+
 app.delete('/api/users/:id', async (req, res) => {
     try {
         await Usuario.update({

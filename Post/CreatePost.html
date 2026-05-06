@@ -593,11 +593,6 @@
                         <div class="field-label">Categoría <span class="req">❖</span></div>
                         <select id="cpCategoria" title="Categoría" aria-label="Categoría">
                             <option value="" disabled selected>Selecciona una categoría</option>
-                            <option>Estadio</option>
-                            <option>Fan Zone</option>
-                            <option>Gastronomía</option>
-                            <option>Turismo</option>
-                            <option>Celebración</option>
                         </select>
                     </div>
 
@@ -777,6 +772,30 @@
                 console.error('Error de geocodificación:', e);
             }
         }
+
+        // ── OBTENER CATEGORÍAS DE LA BASE DE DATOS ──
+        async function cargarCategorias() {
+            try {
+                const response = await fetch('http://localhost:3000/api/categorias');
+                if (response.ok) {
+                    const categorias = await response.json();
+                    const select = document.getElementById('cpCategoria');
+                    select.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
+                    categorias.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.nombre;
+                        option.textContent = cat.nombre;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('Error al obtener categorías:', response.status);
+                }
+            } catch (error) {
+                console.error('Error de red al cargar categorías:', error);
+            }
+        }
+        
+        cargarCategorias();
     </script>
 </body>
 

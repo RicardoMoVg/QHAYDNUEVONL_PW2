@@ -3,7 +3,9 @@
     "allow": [
       "Bash(Get-ChildItem -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
-      "Bash(Sort-Object FullName)"
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\crmon\\\\source\\\\repos\\\\QHAYDNUEVONL_PW2\" -Recurse -Filter \"*.html\")",
+      "Bash(Select-Object -Property FullName)"
     ]
   }
 }

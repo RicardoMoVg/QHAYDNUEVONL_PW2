@@ -260,11 +260,21 @@
                     <article class="content-item" data-id="${u.id_usuario}">
                         <div class="item-main">
                             <div class="user-info">
-                                <h3>${u.nombre} <small style="color:#777;font-weight:400;">[${u.rol}]</small></h3>
+                                <h3>${u.nombre}</h3>
                                 <code>${u.correo}</code>
                                 <div class="admin-meta">
                                     <span>Edad: <b>${u.edad || '—'}</b></span>
                                     <span>Estado: <b>${u.estado}</b></span>
+                                </div>
+                                <div class="rol-change-row" style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                                    <label style="font-size:0.82rem;color:#555;white-space:nowrap;"><i class="fas fa-user-tag" style="color:var(--gold);margin-right:4px;"></i>Rol:</label>
+                                    <select class="rol-select" data-uid="${u.id_usuario}" onchange="actualizarRol(${u.id_usuario}, this)"
+                                            style="padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.85rem;background:#fff;cursor:pointer;">
+                                        <option value="usuario"       ${u.rol === 'usuario'        ? 'selected' : ''}>Usuario</option>
+                                        <option value="moderador"     ${u.rol === 'moderador'      ? 'selected' : ''}>Moderador</option>
+                                        <option value="administrador" ${u.rol === 'administrador'  ? 'selected' : ''}>Administrador</option>
+                                    </select>
+                                    <span class="rol-status" id="rolStatus-${u.id_usuario}" style="font-size:0.78rem;"></span>
                                 </div>
                             </div>
                         </div>
@@ -273,6 +283,33 @@
                         </button>
                     </article>`).join('');
             } catch { el.innerHTML = '<p style="padding:1rem;color:#e74c3c;">Error al cargar usuarios.</p>'; }
+        }
+
+        async function actualizarRol(id, select) {
+            const rol = select.value;
+            const statusEl = document.getElementById(`rolStatus-${id}`);
+            select.disabled = true;
+            statusEl.textContent = '...';
+            statusEl.style.color = '#999';
+            try {
+                const res = await fetch(`${API}/api/users/${id}/rol`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rol })
+                });
+                if (res.ok) {
+                    statusEl.textContent = '✓ Guardado';
+                    statusEl.style.color = '#16a34a';
+                    setTimeout(() => { statusEl.textContent = ''; }, 2500);
+                } else {
+                    statusEl.textContent = '✗ Error';
+                    statusEl.style.color = '#dc2626';
+                }
+            } catch {
+                statusEl.textContent = '✗ Sin conexión';
+                statusEl.style.color = '#dc2626';
+            }
+            select.disabled = false;
         }
 
         async function eliminarUser(id, btn) {
@@ -443,69 +480,257 @@
         }
 
         const reportDescriptions = {
-            posts:   'Listado de publicaciones borradas. Incluye: título, usuario, motivo, fecha.',
-            users:   'Usuarios dados de baja. Incluye: nombre, correo, moderador, motivo, fecha.',
-            comments:'Comentarios eliminados. Incluye: contenido, usuario, moderador, motivo, fecha.',
-            general: 'Consolidado con métricas globales: totales eliminados, moderadores activos, motivos frecuentes.'
+            posts:   'Listado de publicaciones borradas. Incluye: título, usuario, moderador que eliminó, fecha.',
+            users:   'Usuarios dados de baja. Incluye: nombre, correo, rol, moderador que eliminó.',
+            comments:'Comentarios eliminados. Incluye: contenido, autor, moderador que eliminó, fecha.',
+            general: 'Bitácora completa de acciones: muestra qué hizo cada administrador y moderador (posts, usuarios y comentarios eliminados), agrupado por responsable.'
         };
 
         document.getElementById('reportType').addEventListener('change', function() {
             document.getElementById('reportDesc').textContent = reportDescriptions[this.value];
         });
 
+        function fmtFecha(val) {
+            if (!val) return '—';
+            const d = new Date(val);
+            return isNaN(d) ? '—' : d.toLocaleDateString('es-MX');
+        }
+
         async function generarReporte(formato) {
             const tipo = document.getElementById('reportType').value;
-            const tEl = document.getElementById('reportType');
+            const tEl  = document.getElementById('reportType');
             const desc = tEl.options[tEl.selectedIndex].text;
-            
-            let endpoint = '';
-            let mapFn = null;
-            let columns = [];
+
+            if (tipo === 'general') {
+                await generarReporteGeneral(formato);
+                return;
+            }
+
+            let endpoint = '', columns = [], mapFn = null;
 
             if (tipo === 'posts') {
                 endpoint = `${API}/api/posts?estado=eliminado`;
-                columns = ["ID", "Título", "Autor", "Categoría", "Moderador", "Fecha"];
-                mapFn = p => ({ ID: p.id_publicacion, Título: p.titulo, Autor: p.autor, Categoría: p.categoria, Moderador: p.moderador || 'N/A', Fecha: new Date(p.fecha_creacion).toLocaleDateString('es-MX') });
+                columns = ['ID', 'Título', 'Autor', 'Categoría', 'Moderador', 'Fecha eliminación'];
+                mapFn = p => ({
+                    ID: p.id_publicacion,
+                    Título: p.titulo,
+                    Autor: p.autor,
+                    Categoría: p.categoria,
+                    Moderador: p.moderador || 'Sistema',
+                    'Fecha eliminación': fmtFecha(p.fecha_moderacion || p.fecha_creacion)
+                });
             } else if (tipo === 'users') {
                 endpoint = `${API}/api/users?estado=eliminado`;
-                columns = ["ID", "Nombre", "Correo", "Rol", "Moderador"];
-                mapFn = u => ({ ID: u.id_usuario, Nombre: u.nombre, Correo: u.correo, Rol: u.rol, Moderador: u.moderador || 'N/A' });
+                columns = ['ID', 'Nombre', 'Correo', 'Rol', 'Moderador', 'Fecha eliminación'];
+                mapFn = u => ({
+                    ID: u.id_usuario,
+                    Nombre: u.nombre,
+                    Correo: u.correo,
+                    Rol: u.rol,
+                    Moderador: u.moderador || 'Sistema',
+                    'Fecha eliminación': fmtFecha(u.fecha_moderacion)
+                });
             } else if (tipo === 'comments') {
                 endpoint = `${API}/api/comments?estado=eliminado`;
-                columns = ["ID", "Contenido", "Autor", "Moderador", "Post", "Fecha"];
-                mapFn = c => ({ ID: c.id_comentario, Contenido: c.contenido, Autor: c.autor, Moderador: c.moderador || 'N/A', Post: c.post_titulo, Fecha: new Date(c.fecha_comentario).toLocaleDateString('es-MX') });
-            } else {
-                // General
-                endpoint = `${API}/api/posts?estado=todos`;
-                columns = ["ID", "Título", "Autor", "Estado", "Moderador", "Fecha"];
-                mapFn = p => ({ ID: p.id_publicacion, Título: p.titulo, Autor: p.autor, Estado: p.estado, Moderador: p.moderador || '—', Fecha: new Date(p.fecha_creacion).toLocaleDateString('es-MX') });
+                columns = ['ID', 'Contenido', 'Autor', 'Moderador', 'Post', 'Fecha eliminación'];
+                mapFn = c => ({
+                    ID: c.id_comentario,
+                    Contenido: c.contenido,
+                    Autor: c.autor,
+                    Moderador: c.moderador || 'Sistema',
+                    Post: c.post_titulo,
+                    'Fecha eliminación': fmtFecha(c.fecha_moderacion || c.fecha_comentario)
+                });
             }
 
             try {
-                const res = await fetch(endpoint);
-                const data = await res.json();
-                if (!data.length) { alert(`No hay datos para el reporte: ${desc}`); return; }
-
+                const data = await fetch(endpoint).then(r => r.json());
+                if (!Array.isArray(data) || !data.length) { alert(`No hay datos para: ${desc}`); return; }
                 const rows = data.map(mapFn);
 
                 if (formato.toUpperCase() === 'EXCEL') {
-                    const ws = XLSX.utils.json_to_sheet(rows);
                     const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "AdminReport");
-                    XLSX.writeFile(wb, `AdminReport_${tipo}_${Date.now()}.xlsx`);
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Reporte');
+                    XLSX.writeFile(wb, `Reporte_${tipo}_${Date.now()}.xlsx`);
                 } else {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-                    doc.setFontSize(18);
-                    doc.text(`Reporte Administrativo: ${desc}`, 14, 22);
-                    doc.setFontSize(11);
-                    doc.setTextColor(100);
-                    doc.text(`Generado por Administrador - ${new Date().toLocaleString()}`, 14, 30);
-                    doc.autoTable({ head: [columns], body: rows.map(r => Object.values(r)), startY: 40, theme: 'striped', headStyles: { fillColor: [220, 38, 38] } });
-                    doc.save(`AdminReport_${tipo}_${Date.now()}.pdf`);
+                    doc.setFillColor(0, 31, 91);
+                    doc.rect(0, 0, 210, 28, 'F');
+                    doc.setFontSize(15); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+                    doc.text(`Reporte: ${desc}`, 14, 13);
+                    doc.setFontSize(9); doc.setFont('helvetica','normal');
+                    doc.text(`Generado: ${new Date().toLocaleString('es-MX')}  |  Por: ${usuario.nombre}`, 14, 22);
+                    doc.autoTable({
+                        head: [columns], body: rows.map(r => Object.values(r)), startY: 36,
+                        theme: 'striped',
+                        headStyles: { fillColor: [0, 31, 91], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+                        bodyStyles: { fontSize: 8 },
+                        margin: { left: 14, right: 14 }
+                    });
+                    doc.save(`Reporte_${tipo}_${Date.now()}.pdf`);
                 }
                 toggleReportModal();
-            } catch (err) { console.error(err); alert('Error al generar el reporte administrativo.'); }
+            } catch (err) { console.error(err); alert('Error al generar el reporte.'); }
+        }
+
+        async function generarReporteGeneral(formato) {
+            try {
+                const [postsEl, usersEl, commentsEl] = await Promise.all([
+                    fetch(`${API}/api/posts?estado=eliminado`).then(r => r.json()).catch(() => []),
+                    fetch(`${API}/api/users?estado=eliminado`).then(r => r.json()).catch(() => []),
+                    fetch(`${API}/api/comments?estado=eliminado`).then(r => r.json()).catch(() => [])
+                ]);
+
+                const safe = arr => Array.isArray(arr) ? arr : [];
+
+                // Construir bitácora de acciones
+                const acciones = [];
+                safe(postsEl).forEach(p => acciones.push({
+                    moderador: p.moderador || 'Sistema',
+                    tipo: 'Post eliminado',
+                    detalle: p.titulo || '—',
+                    extra: p.categoria || '—',
+                    fecha: fmtFecha(p.fecha_moderacion || p.fecha_creacion)
+                }));
+                safe(usersEl).forEach(u => acciones.push({
+                    moderador: u.moderador || 'Sistema',
+                    tipo: 'Usuario eliminado',
+                    detalle: u.nombre || '—',
+                    extra: u.correo || '—',
+                    fecha: fmtFecha(u.fecha_moderacion)
+                }));
+                safe(commentsEl).forEach(c => acciones.push({
+                    moderador: c.moderador || 'Sistema',
+                    tipo: 'Comentario eliminado',
+                    detalle: (c.contenido || '—').substring(0, 80),
+                    extra: c.post_titulo || '—',
+                    fecha: fmtFecha(c.fecha_moderacion || c.fecha_comentario)
+                }));
+
+                // Agrupar por moderador
+                const porMod = {};
+                acciones.forEach(a => {
+                    if (!porMod[a.moderador]) porMod[a.moderador] = [];
+                    porMod[a.moderador].push(a);
+                });
+
+                const resumen = [
+                    { Métrica: 'Posts eliminados',        Total: safe(postsEl).length },
+                    { Métrica: 'Usuarios eliminados',     Total: safe(usersEl).length },
+                    { Métrica: 'Comentarios eliminados',  Total: safe(commentsEl).length },
+                    { Métrica: 'Total de acciones',       Total: acciones.length },
+                    { Métrica: 'Moderadores/Admins activos', Total: Object.keys(porMod).length }
+                ];
+
+                if (!acciones.length) { alert('No hay acciones de moderación registradas.'); return; }
+
+                if (formato.toUpperCase() === 'EXCEL') {
+                    const wb = XLSX.utils.book_new();
+
+                    // Hoja 1: Resumen global
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen Global');
+
+                    // Hoja 2: Totales por moderador
+                    const totalesMod = Object.entries(porMod).map(([mod, acts]) => ({
+                        'Moderador / Admin': mod,
+                        'Posts eliminados':        acts.filter(a => a.tipo === 'Post eliminado').length,
+                        'Usuarios eliminados':     acts.filter(a => a.tipo === 'Usuario eliminado').length,
+                        'Comentarios eliminados':  acts.filter(a => a.tipo === 'Comentario eliminado').length,
+                        'Total de acciones':       acts.length
+                    }));
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(totalesMod), 'Por Moderador');
+
+                    // Hoja 3: Bitácora completa
+                    const bitacora = acciones.map(a => ({
+                        'Moderador / Admin': a.moderador,
+                        'Tipo de acción':    a.tipo,
+                        'Detalle':           a.detalle,
+                        'Info adicional':    a.extra,
+                        'Fecha':             a.fecha
+                    }));
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(bitacora), 'Bitácora');
+
+                    XLSX.writeFile(wb, `ReporteGeneral_${Date.now()}.xlsx`);
+
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const NAVY  = [0, 31, 91];
+                    const AMBER = [255, 193, 7];
+                    const DARK  = [30, 30, 60];
+
+                    // Encabezado
+                    doc.setFillColor(...NAVY);
+                    doc.rect(0, 0, 210, 32, 'F');
+                    doc.setFontSize(16); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+                    doc.text('REPORTE GENERAL DE MODERACION', 14, 14);
+                    doc.setFontSize(9); doc.setFont('helvetica','normal');
+                    doc.text(`Generado: ${new Date().toLocaleString('es-MX')}   |   Administrador: ${usuario.nombre}`, 14, 24);
+
+                    let y = 42;
+
+                    // Resumen Global
+                    doc.setFontSize(11); doc.setTextColor(...NAVY); doc.setFont('helvetica','bold');
+                    doc.text('RESUMEN GLOBAL', 14, y);
+                    y += 2;
+                    doc.autoTable({
+                        startY: y + 2,
+                        head: [['Métrica', 'Total']],
+                        body: resumen.map(r => [r.Métrica, r.Total]),
+                        theme: 'striped',
+                        headStyles: { fillColor: NAVY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                        bodyStyles: { fontSize: 9 },
+                        columnStyles: { 1: { halign: 'center', cellWidth: 30 } },
+                        margin: { left: 14, right: 14 }
+                    });
+                    y = doc.lastAutoTable.finalY + 12;
+
+                    // Actividad por moderador
+                    doc.setFontSize(11); doc.setTextColor(...NAVY); doc.setFont('helvetica','bold');
+                    doc.text('ACTIVIDAD POR MODERADOR / ADMINISTRADOR', 14, y);
+                    y += 8;
+
+                    for (const [mod, acts] of Object.entries(porMod)) {
+                        if (y > 248) { doc.addPage(); y = 16; }
+
+                        const cPosts = acts.filter(a => a.tipo === 'Post eliminado').length;
+                        const cUsers = acts.filter(a => a.tipo === 'Usuario eliminado').length;
+                        const cComs  = acts.filter(a => a.tipo === 'Comentario eliminado').length;
+
+                        // Chip del moderador
+                        doc.setFillColor(...AMBER);
+                        doc.roundedRect(14, y - 5, 182, 11, 2, 2, 'F');
+                        doc.setFontSize(9); doc.setTextColor(...NAVY); doc.setFont('helvetica','bold');
+                        doc.text(
+                            `${mod}     Posts: ${cPosts}   Usuarios: ${cUsers}   Comentarios: ${cComs}   Total: ${acts.length}`,
+                            18, y + 2
+                        );
+                        y += 14;
+
+                        doc.autoTable({
+                            startY: y,
+                            head: [['Tipo de acción', 'Detalle', 'Info adicional', 'Fecha']],
+                            body: acts.map(a => [a.tipo, a.detalle, a.extra, a.fecha]),
+                            theme: 'grid',
+                            headStyles: { fillColor: DARK, textColor: 255, fontSize: 8, fontStyle: 'bold' },
+                            bodyStyles: { fontSize: 8 },
+                            columnStyles: {
+                                0: { cellWidth: 38 },
+                                1: { cellWidth: 70 },
+                                2: { cellWidth: 55 },
+                                3: { cellWidth: 24, halign: 'center' }
+                            },
+                            margin: { left: 14, right: 14 }
+                        });
+                        y = doc.lastAutoTable.finalY + 10;
+                    }
+
+                    doc.save(`ReporteGeneral_${Date.now()}.pdf`);
+                }
+
+                toggleReportModal();
+            } catch (err) { console.error(err); alert('Error al generar el reporte general.'); }
         }
 
         // --- Carga inicial ---
